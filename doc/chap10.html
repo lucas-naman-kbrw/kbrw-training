@@ -1,0 +1,93 @@
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+margin: 0 auto;
+padding: 45px;
+}
+
+@media (max-width: 767px) {
+  .markdown-body {
+padding: 15px;
+  }
+}
+</style>
+<article class="markdown-body">
+<!DOCTYPE html>
+<html>
+<head>
+  <title>chap10/README.md</title>
+  <link rel="stylesheet" href="../.github-markdown-css/github-markdown.css">
+</head>
+<body>
+<h1>
+<a id="user-content-chapter-10---sa_deps-and-welcome-to-kbrw" class="anchor" href="#chapter-10---sa_deps-and-welcome-to-kbrw" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Chapter 10 - SA_DEPS, and Welcome to KBRW</h1>
+<h1>
+<a id="user-content-introduction" class="anchor" href="#introduction" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Introduction</h1>
+<p>Congratulation, you've made it to the end!</p>
+<p>You will have to do this last chapter on your first day at KBRW, as it requires access to some private resources.</p>
+<p>In this chapter we'll give you final explanations on tools we use to develop our projects and how to set them up.</p>
+<h1>
+<a id="user-content-step-0---set-up-the-vpn" class="anchor" href="#step-0---set-up-the-vpn" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 0 - Set up the VPN</h1>
+<p>Some resources of the company can only be accessed via our <strong>VPN</strong>.<br>
+You will find attached to this chapter a <code>VPN/</code> sub-directory, with inside it a <code>shell</code> script.</p>
+<p>If you are on debian, it should help you: <code>sudo ./confvpn.sh &lt;id&gt; &lt;password&gt;</code>.</p>
+<p>We also wrote a documentation about how to use the VPN. You can access it <a href="./VPN.html">here</a>.</p>
+<h2>
+<a id="user-content-step-1---get-dependencies-and-endpoints-example" class="anchor" href="#step-1---get-dependencies-and-endpoints-example" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 1 - Get dependencies and endpoints example</h2>
+<p>First we will need to add the <code>:sa_deps</code> dependency:</p>
+<pre><code>{:sa_deps, git: "ssh://git.kbrwadventure.com/~git/sa_deps"}
+</code></pre>
+<p>And we need to add <code>:sa_deps</code> on the start up application in our mix file.</p>
+<p>Then let's clone the <code>endpoint</code> repository which provides some bypass.</p>
+<pre><code>git clone ssh://&lt;username&gt;@git.kbrwadventure.com/~git/endpoint
+</code></pre>
+<p>In the folder <code>endpoints/</code> you will find all the json that describe the endpoints of your project.
+To allows the application to access it you can simply run the following python command once you are in
+the directory <code>endpoints/</code>:</p>
+<pre><code>python -m  SimpleHTTPServer 8000
+</code></pre>
+<p>This will give access to this directory on the port 8000 of your localhost.</p>
+<p>As these endpoints are always required by the project, I recommend you to alias the following command:</p>
+<pre><code>alias start_endpoint='cd $endpoint &amp;&amp; python -m  SimpleHTTPServer 8000'
+</code></pre>
+<p>where <code>$endpoint</code> is the location of all the json files.</p>
+<p>Let's create an endpoint for our local Riak server in the endpoints.</p>
+<pre><code>[tutoex.json]
+{
+  "local_riak":    {"endpoint": "http://localhost:8098"}
+}
+</code></pre>
+<h2>
+<a id="user-content-step-2---dive-into-the-sa_deps-source" class="anchor" href="#step-2---dive-into-the-sa_deps-source" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 2 - Dive into the SA_DEPS source.</h2>
+<p>In the different projects, <code>sa_deps</code> allows you to access to the endpoint given depending on your
+environement from: <code>localhost:8000</code>, <code>http://qa-endpoint.priv.qa.kbrwadventure.com/</code>, <code>http://pp-endpoint.priv.pp.kbrwadventure.com/</code>.</p>
+<p>To access to the correct endpoints, <code>sa_deps</code> needs to have as <code>Application</code> configuration the address
+of the endpoints and the name of the project. So we need to add the sa_deps configuration to our
+project config in <code>config/config.exs</code>:</p>
+<pre><code>sa_deps: [
+    endpoint: "http://localhost:8000/tutoex.json",
+    project: :bib_mdo_ui,
+  ]
+</code></pre>
+<h3>
+<a id="user-content-now-lets-dive-into-the-code-of-sa_deps-to-understand-how-to-use-our-endpoints" class="anchor" href="#now-lets-dive-into-the-code-of-sa_deps-to-understand-how-to-use-our-endpoints" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Now let's dive into the code of <code>sa_deps</code> to understand how to use our endpoints:</h3>
+<p>Let's read the code we need to install our endpoint <code>lib/sa_deps/directory.ex </code>.
+(You are encouraged to have a look to all the other files but we won't present them all here).</p>
+<p>In this file we will find all the project endpoint description. But it's not a good practice to commit
+on the <code>sa_deps</code> repository. So we will write it in our project.</p>
+<pre><code>defmodule Endpoints do
+  require :sa_deps
+  def riak_base_url do 
+    :sa_deps.url(["local_riak", "endpoint"])
+  end
+end
+</code></pre>
+<p>Now you have your url in the module <code>Endpoints</code></p>
+<hr>
+<p><a href="chap9.html">Prev Chapter</a> <strong>Chapter 10</strong></p>
+
+</body>
+</html>
+</article>

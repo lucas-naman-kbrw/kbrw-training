@@ -1,0 +1,111 @@
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+margin: 0 auto;
+padding: 45px;
+}
+
+@media (max-width: 767px) {
+  .markdown-body {
+padding: 15px;
+  }
+}
+</style>
+<article class="markdown-body">
+<!DOCTYPE html>
+<html>
+<head>
+  <title>chap10/VPN.md</title>
+  <link rel="stylesheet" href="../.github-markdown-css/github-markdown.css">
+</head>
+<body>
+<h1>
+<a id="user-content-vpn" class="anchor" href="#vpn" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>VPN</h1>
+<h2>
+<a id="user-content-step-0-set-up-the-vpn-for-kbrw" class="anchor" href="#step-0-set-up-the-vpn-for-kbrw" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 0: Set up the VPN for KBRW</h2>
+<p>To set up the VPN, use the <code>confvpn.sh</code> script given.</p>
+<p><code>sudo ./confvpn.sh &lt;id&gt; &lt;password&gt;</code></p>
+<p>Normally, now the VPN is working. And you should be able to connect to <a href="http://yp01.priv.qa.kbrw.fr/" rel="nofollow"><code>http://yp01.priv.qa.kbrw.fr/</code></a>.</p>
+<h2>
+<a id="user-content-step-1-shutdown-the-vpn" class="anchor" href="#step-1-shutdown-the-vpn" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 1: Shutdown the VPN</h2>
+<p>Yes, ... The goal of this tutorial is not only to launch the script and play on the internal network.
+The objective is to be able to still use internal ressources even if the VPN is down. So let's
+shutdown the VPN.</p>
+<pre><code>sudo systemctl stop strongswan
+</code></pre>
+<p>Now if you resfresh the page of the QA you shouldn't be able to access it.</p>
+<h2>
+<a id="user-content-step-2-create-a-ssh-tunnel" class="anchor" href="#step-2-create-a-ssh-tunnel" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 2: Create a ssh tunnel</h2>
+<p>Let's create a tunnel between the QA ressources and our <code>localhost</code>.</p>
+<pre><code>ssh access01.cloud.kbrwadventure.com -L 1234:yp01.priv.qa.kbrw.fr:80
+</code></pre>
+<p>Let's talk a bit about this command. This command creates a tunnel on <code>localhost:1234</code> to
+<code>yp01.priv.qa.kbrw.fr:80</code> through the server <code>access01.cloud.kbrwadventure.com</code>.
+This means that if we want to access to <code>yp01.priv.qa.kbrw.fr:80</code>, you should
+access to <code>localhost:1234</code> and the server <code>access01.cloud.kbrwadventure.com</code> will perform the
+query and return the result to our binded port.</p>
+<p>Unfortunately this method is limited. Indeed, if you want then to access to the <code>qa-sa-user.kbrw.fr:8080</code>, you will need to rebind it.</p>
+<h2>
+<a id="user-content-step-3-create-a-socket-binding" class="anchor" href="#step-3-create-a-socket-binding" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 3: Create a socket binding</h2>
+<p>Now we want to avoid to have to rebind on a diffrent port every server. For that, we will bind the
+port <code>1111</code> to <code>socks5h</code> protocol that will redirect all the connection that comes through this port
+with the <code>socks5h</code> protocol to the given adress. In fact it creates a proxy.</p>
+<p>Let's create a local proxy on our own machine on the port <code>1112</code>. (This will have no effect else than have an example)
+--proxy socks5h://localhost:1112</p>
+<pre><code>ssh -D 1112 localhost 
+</code></pre>
+<p>Now to access to internet through our proxy we can us the <code>proxy</code> option of curl.</p>
+<pre><code>curl --proxy socks5h://localhost:1112 http://127.0.0.1:8098/ping
+OK
+</code></pre>
+<p>Now let's use it on a real example:
+We want to connect to the server <code>sa-order.priv.qa.kbrwadventure.com</code> with
+ssh via the <code>access01.cloud.kbrwadventure.com</code> proxy.</p>
+<p>First, let's edit the file <code>~/.ssh/config</code></p>
+<pre lang="ssh"><code>Host sa-order.priv.qa.kbrwadventure.com
+  ProxyCommand ssh access01.cloud.kbrwadventure.com nc %h %p
+</code></pre>
+<p>Now when you will try to ssh on a host in the <code>Host</code> list, you will be redirected through the proxy
+contained in the <code>ProxyCommand</code>.</p>
+<div class="highlight highlight-source-shell"><pre>ssh sa-order.priv.qa.kbrwadventure.com</pre></div>
+<p>We can then add some extension to our browser to navigate through this proxy.
+Let's start our proxy on the port 1111</p>
+<div class="highlight highlight-source-shell"><pre>ssh -D 1111  access01.cloud.kbrwadventure.com</pre></div>
+<p>Then if you have chrome you can install <a href="https://chrome.google.com/webstore/detail/proxy-switchyomega/padekgcemlokbadohgkifijomclgjgif?hl=en" rel="nofollow">Proxy Switchy-Omega</a> (else install chrome) and configure the
+extension as follow:</p>
+<table>
+<thead>
+<tr>
+<th>Protocol</th>
+<th>Server</th>
+<th>Port</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SOCKS5</td>
+<td>127.0.0.1</td>
+<td>1111</td>
+</tr>
+</tbody>
+</table>
+<p>We can also configure git to fetch the repository through this proxy:</p>
+<div class="highlight highlight-source-shell"><pre><span class="pl-c"><span class="pl-c">#!</span>/bin/sh</span>
+PROXY_IP=127.0.0.1
+PROXY_PORT=1111
+
+nc -x<span class="pl-smi">${PROXY_IP}</span>:<span class="pl-smi">${PROXY_PORT}</span> -X5 <span class="pl-smi">$*</span>
+
+<span class="pl-c"><span class="pl-c">#</span>exec socat STDIO SOCKS:localhost:$1:$2,socksport=1111%</span></pre></div>
+<p>Where <code>nc</code> communicate through our proxy.
+Now we need to add to our <code>.gitconfig</code>:</p>
+<pre lang="git"><code>[core]
+    gitproxy = &lt;PATH_TO_THE_SCRIPT&gt;/git_proxy.sh
+</code></pre>
+<p><a href="./chap10.html">Back to chapter 10</a></p>
+
+</body>
+</html>
+</article>
