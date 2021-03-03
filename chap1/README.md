@@ -339,12 +339,15 @@ We're gonna fix that ! After all, aren't we  **Elixir ninjas** ?
 ---
 ## Question time !
 
-* Why use an ETS table ?
-* What are the advantages of wrapping an ETS table inside a GenServer ?
+* Why use an ETS table ? cuncurence / easy to use / big data / any erlang type
+* What are the advantages of wrapping an ETS table inside a GenServer ? Easy management of the table
 * What is a `Behaviour` in Elixir ?
+  define a set of functions that have to be implemented by a module;
+  ensure that a module implements all the functions in that set.
 
 **Go further**
 * What are the differences between a `Protocol` and a `Behaviour` ?
+protocol define diferents functions / behaviour define multiple module
 * In which cases would you want to use a `Protocol` ? a `Behaviour` ?
 
 ---
