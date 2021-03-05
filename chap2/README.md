@@ -151,6 +151,7 @@ This module will be used (`use`) by our router, and will contain the implementat
 
 
 Our module will use the two private macros `__using__` and `__before_compile__`.    
+
 The first one is gonna import the necessary modules, inform the compiler that we want our macro `__before_compile__` to be called, and initialize some [attributes](https://elixir-lang.org/getting-started/module-attributes.html) like the container of functions to call for each path, or the behaviour in case of error.  
   
 The second one will define two functions (`init/1`, `call/2`), that will make the user of `Server.TheCreator` a **Plug Module**.  
