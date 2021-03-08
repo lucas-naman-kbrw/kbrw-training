@@ -233,11 +233,16 @@ _See the documentation for more details on how to fetch the query parameters._
 ---
 ## Question time !
 
-* What are the `Plug`s
-* What utilities does they have ?
-* What should `defmacro` return ?
-* Why use the `Poison` dependency ?
+* What are the `Plug`s "Connection adapters for different web servers in Erlang VM"
+* What utilities does they have ? they are use t oconnect multiple vm's
+* What should `defmacro` return ? It should return a quoted expression
+* Why use the `Poison` dependency ? To switch for json to sting and string to json
 * What does the `use` keyword do ? What are the differences with `require` ?
+
+It requires the given module and then calls the __using__/1 callback on it 
+
+Require makes the macros from the require’d module available to the current lexical scope.
+"Use" call "Require" and call the __using__/1 callback of the module
 
 ---
 

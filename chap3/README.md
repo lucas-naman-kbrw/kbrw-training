@@ -438,10 +438,10 @@ _If you have some js errors, remember that the script file you need to use is no
 ---
 ## Question time !
 
-* Define *transpiling*
-* Why use **Babel** ?
-* Why use **Webpack** ?
-* Can we use Babel **without** Webpack ?
+* Define *transpiling* transpiling is the transformation of source code from a language to another with the same level of abstraction
+* Why use **Babel** ? to transpile our jsxz to vanilla js
+* Why use **Webpack** ? To put all of our js file in only one. It make our code lighter to download from the client side while keeping a clean folder architecture.
+* Can we use Babel **without** Webpack ? yes
 
 ---
 [Prev chapter](chap2.html) **Chapter 3** [Next chapter](chap4.html) 
