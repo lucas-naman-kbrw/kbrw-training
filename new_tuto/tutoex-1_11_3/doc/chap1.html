@@ -1,0 +1,351 @@
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+margin: 0 auto;
+padding: 45px;
+}
+
+@media (max-width: 767px) {
+  .markdown-body {
+padding: 15px;
+  }
+}
+</style>
+<article class="markdown-body">
+<!DOCTYPE html>
+<html>
+<head>
+  <title>chap1/README.md</title>
+  <link rel="stylesheet" href="../.github-markdown-css/github-markdown.css">
+</head>
+<body>
+<h1>
+<a id="user-content-chapter-1---genserver-ets-table-and-supervisor" class="anchor" href="#chapter-1---genserver-ets-table-and-supervisor" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Chapter 1 - GenServer, ETS Table and Supervisor</h1>
+<p>In this chapter we will discover the wonderful world of <strong><code>GenServer</code></strong>,
+<strong><code>Supervisor</code></strong> and <strong><code>ETS Table</code></strong>. The objective of this chapter is to
+create an <strong><code>ETS Table</code></strong> managed by a <strong><code>GenServer</code></strong> which is supervised
+by a <strong><code>Supervisor</code></strong></p>
+<h2>
+<a id="user-content-step-0---my-homemade-genserver" class="anchor" href="#step-0---my-homemade-genserver" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 0 - My Homemade GenServer</h2>
+<p>In this step we are gonna re-implement an <a href="https://hexdocs.pm/elixir/GenServer.html" rel="nofollow"><strong>Elixir GenServer</strong></a> using <a href="https://hexdocs.pm/elixir/Process.html" rel="nofollow"><strong>raw Process</strong></a>.</p>
+<p>I invite you to read a bunch of this documentation, so that you know where we are going:</p>
+<ul>
+<li><a href="https://hexdocs.pm/elixir/GenServer.html" rel="nofollow">GenServer</a></li>
+<li><a href="https://hexdocs.pm/elixir/Process.html" rel="nofollow">Process</a></li>
+<li><a href="https://elixir-lang.org/getting-started/processes.html" rel="nofollow">Elixir Guide on Processes</a></li>
+</ul>
+<p>I also encourage you to checkout a mini course, wrote by our CTO, Arnaud Wetzel. It will give you a better understanding of what happens backstage when you use a GenServer.<br>
+The course is available right here on <a href="https://github.com/awetzel/imt_actor_course_2017">GitHub</a>.</p>
+<hr>
+<p><strong>Exercice:</strong><br>
+Create a module named <code>MyGenericServer</code>.<br>
+This module should contains 4 functions:</p>
+<ul>
+<li>
+<code>loop/2({callback_module, server_state})</code>
+<ul>
+<li>The main loop of our process.</li>
+<li>The <code>callback_module</code> contains callback functions that will be called by our server</li>
+<li>It's gonna use the <code>Kernel.send/2</code> and <code>Kernel.receive/1</code> functions to communicate</li>
+<li>It's gonna call itself recursively</li>
+<li>Inspire yourself from the <a href="https://elixir-lang.org/getting-started/processes.html" rel="nofollow">Elixir Guide</a>
+</li>
+</ul>
+</li>
+<li>
+<code>cast/2(process_pid, request)</code>
+<ul>
+<li>This is just a wrapper to communicate with your Process using <code>Kernel.send/2</code>
+</li>
+<li>It should have the same return format as the <code>cast</code> function of a <code>GenServer</code>
+</li>
+</ul>
+</li>
+<li>
+<code>call/2(process_pid, request)</code>
+<ul>
+<li>This is also a wrapper to communicate with your Process using <code>send</code>
+</li>
+<li>This time, it should return the result calculated by your process depending on the <code>request</code>
+</li>
+<li>It should have the same return format as the <code>call</code> function of a <code>GenServer</code>
+</li>
+</ul>
+</li>
+<li>
+<code>start_link(callack_module, server_initial_state)</code>
+<ul>
+<li>Utility function that will instantiate your server using <code>spawn_link/1</code>
+</li>
+<li>It should return <code>{:ok, your_process_pid}</code>
+</li>
+</ul>
+</li>
+</ul>
+<p>In your <code>loop/2</code> function, you will call the corresponding <code>handle_cast/2(request, state)</code> and <code>handle_call/2(request, state)</code> function of your <code>callback_module</code> when needed.<br>
+The <strong>cast</strong> handler will return the new inner state of your server.<br>
+The <strong>call</strong> handler will return the response of the call, and the new inner state of your server.</p>
+<p>Giving all this, I should be able to use your <code>MyGenericServer</code> like this:</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defmodule</span> <span class="pl-en">AccountServer</span> <span class="pl-k">do</span>
+  <span class="pl-k">def</span> <span class="pl-en">handle_cast</span>({<span class="pl-c1">:credit</span>, c}, amount), <span class="pl-c1">do:</span> amount <span class="pl-k">+</span> c
+  <span class="pl-k">def</span> <span class="pl-en">handle_cast</span>({<span class="pl-c1">:debit</span>, c}, amount), <span class="pl-c1">do:</span> amount <span class="pl-k">-</span> c
+  <span class="pl-k">def</span> <span class="pl-en">handle_call</span>(<span class="pl-c1">:get</span>, amount) <span class="pl-k">do</span>
+    <span class="pl-c"><span class="pl-c">#</span>Return the response of the call, and the new inner state of the server</span>
+    {amount, amount}
+  <span class="pl-k">end</span>
+
+  <span class="pl-k">def</span> <span class="pl-en">start_link</span>(initial_amount) <span class="pl-k">do</span>
+    <span class="pl-en">MyGenericServer</span>.<span class="pl-en">start_link</span>(<span class="pl-en">AccountServer</span>,initial_amount)
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span>
+
+{<span class="pl-c1">:ok</span>, my_account} <span class="pl-k">=</span> <span class="pl-en">AccountServer</span>.<span class="pl-en">start_link</span>(<span class="pl-c1">4</span>)
+<span class="pl-en">MyGenericServer</span>.<span class="pl-en">cast</span>(my_account, {<span class="pl-c1">:credit</span>, <span class="pl-c1">5</span>})
+<span class="pl-en">MyGenericServer</span>.<span class="pl-en">cast</span>(my_account, {<span class="pl-c1">:credit</span>, <span class="pl-c1">2</span>})
+<span class="pl-en">MyGenericServer</span>.<span class="pl-en">cast</span>(my_account, {<span class="pl-c1">:debit</span>, <span class="pl-c1">3</span>})
+amount <span class="pl-k">=</span> <span class="pl-en">MyGenericServer</span>.<span class="pl-en">call</span>(my_account, <span class="pl-c1">:get</span>)
+<span class="pl-en">IO</span>.<span class="pl-en">puts</span> <span class="pl-s"><span class="pl-pds">"</span>current credit hold is <span class="pl-pse">#{</span><span class="pl-s1">amount</span><span class="pl-pse">}</span><span class="pl-pds">"</span></span></pre></div>
+<hr>
+<h2>
+<a id="user-content-step-1---ets-table" class="anchor" href="#step-1---ets-table" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 1 - ETS Table</h2>
+<p>The <strong><code>ETS</code></strong> documentation is available
+<a href="http://erlang.org/doc/man/ets.html" rel="nofollow">here</a>. You can  also have a look to
+the <strong>Elixir</strong> official tutorial
+<a href="https://elixir-lang.org/getting-started/mix-otp/ets.html" rel="nofollow">here</a></p>
+<p>As you can see in the documentation, <code>:ets</code> is an <strong>Erlang</strong> module.
+To access <strong>Erlang</strong> modules in <strong>Elixir</strong> you need to use their Atom
+name (here <code>:ets</code>).</p>
+<p>Let's create our first <code>:ets</code> table.</p>
+<div class="highlight highlight-source-elixir"><pre>my_table <span class="pl-k">=</span> <span class="pl-c1">:ets</span>.<span class="pl-en">new</span>(<span class="pl-c1">:table</span>, [])</pre></div>
+<p>The variable <code>my_table</code> now contains an id pointing to our table named <code>:table</code>.
+To access your table you will need to provide this id to the methods of the
+<code>:ets</code> module, as follows.</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-c1">:ets</span>.<span class="pl-en">insert_new</span>(my_table, {key, value})
+<span class="pl-c1">:ets</span>.<span class="pl-en">lookup</span>(my_table, key)</pre></div>
+<p>As you can see, you need to save your table id inside a variable if you want to access your table. This might become unconfortable if you want to
+access it from isolated part of your code.<br>
+<strong>Erlang</strong> is smart and allows you to solve this problem pretty easily. The <code>:named_table</code> option will allow you to call it using you table's atom:</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-c1">:ets</span>.<span class="pl-en">new</span>(<span class="pl-c1">:table</span>, [<span class="pl-c1">:named_table</span>])
+<span class="pl-c1">:ets</span>.<span class="pl-en">insert_new</span>(<span class="pl-c1">:table</span>, {key, value})
+<span class="pl-c1">:ets</span>.<span class="pl-en">lookup</span>(<span class="pl-c1">:table</span>, key)</pre></div>
+<p><em>(Be sure here to delete your previous :table before recreating one with
+the same name)</em></p>
+<p><strong>Hint:</strong> This option is also pretty common among modules like <strong>GenServer</strong> and <strong>Supervisor</strong>.</p>
+<p><strong>Exercise:</strong><br>
+Here, we suggest you to play with the <code>:ets</code> module and have a
+quick look to the tutorial provided by <strong>Elixir</strong>.</p>
+<h2>
+<a id="user-content-step-2---genserver" class="anchor" href="#step-2---genserver" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 2 - GenServer</h2>
+<p>The <strong>GenServer</strong> documentation is available <a href="https://hexdocs.pm/elixir/GenServer.html" rel="nofollow">here</a>.<br>
+I recommend you to have a look to the <strong>Elixir</strong> official tutorial <a href="https://elixir-lang.org/getting-started/mix-otp/genserver.html" rel="nofollow">here</a></p>
+<p><strong><code>GenServer</code></strong> is an elixir module that helps you manage a multi-threaded environment. A <strong><code>GenServer</code></strong> is a <code>Process</code> that owns an internal value.
+To implement a <strong><code>GenServer</code></strong> module you only need
+to <code>use</code> the <strong><code>GenServer</code></strong> module and implement the function <code>init/1</code>.
+To start your server, use the function <code>GenServer.start_link/3</code></p>
+<p>First, lets have a look to thoose functions.</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defmodule</span> <span class="pl-e">Server</span>.<span class="pl-en">Database</span> <span class="pl-k">do</span> 
+<span class="pl-k">use</span> <span class="pl-en">GenServer</span> 
+
+<span class="pl-k">def</span> <span class="pl-en">start_link</span>(initial_value) <span class="pl-k">do</span>
+  <span class="pl-en">GenServer</span>.<span class="pl-en">start_link</span>(<span class="pl-c1">__MODULE__</span>, initial_value, <span class="pl-c1">name:</span> <span class="pl-c1">__MODULE__</span>)
+<span class="pl-k">end</span>
+
+<span class="pl-k">def</span> <span class="pl-en">init</span>(<span class="pl-c">_</span>) <span class="pl-k">do</span>
+  {<span class="pl-c1">:ok</span>, <span class="pl-c1">:ok</span>}
+<span class="pl-k">end</span> </pre></div>
+<p>Here the function <code>start_link/1</code> allows our module to start our process.</p>
+<p>As you can read in the <a href="https://hexdocs.pm/elixir/GenServer.html#start_link/3" rel="nofollow">documentation</a> of the <code>start_link/3</code> function of the
+module <strong><code>GenServer</code></strong>,
+the first argument is the module's name where <strong><code>GenServer</code></strong> will look
+for the <code>init</code> function, the second argument is the initial value of the
+internaly stored variable, and the third argument are the options for the <strong>GenServer</strong>.</p>
+<p>The <code>init/1</code> function of our module is the function called on start up
+by the <strong><code>GenServer</code></strong> module. This function is supposed to return a tuple,
+matching on <code>{:ok, _}</code>, where the second element of the tuple is the internal
+stored value of the <strong><code>GenServer</code></strong> after the initialization.</p>
+<p>The <strong><code>GenServer</code></strong> communication API is composed of 2 main functions and some
+derivated functions. The main ones are <code>call/2</code> and <code>cast/2</code> which allows the user to make respectively synchronous and asynchronous calls to the <strong>GenServer Process</strong>.</p>
+<p>To handle the call to its API, our <strong><code>GenServer</code></strong> module have to implement the
+<strong>callbacks</strong> <code>handle_call/3</code> and <code>handle_cast/3</code>. You can use the <strong>module attribute <code>@impl true</code></strong> to inform the compiler that your function is a callback. Learn more about <strong>module attributes</strong> and <strong>callbacks</strong> <a href="https://hexdocs.pm/elixir/master/Module.html" rel="nofollow">here</a></p>
+<p>Let's have a look to the <code>call/2</code> and <code>cast/2</code> signature. And then then
+have a look to the parameters given to the <code>handle_call/3</code> and <code>handle_cast/3</code>
+functions.</p>
+<div class="highlight highlight-source-elixir"><pre>value <span class="pl-k">=</span> <span class="pl-en">GenServer</span>.<span class="pl-en">call</span>(<span class="pl-c1">__MODULE__</span>, object)
+<span class="pl-c1">:ok</span> <span class="pl-k">=</span> <span class="pl-en">GenServer</span>.<span class="pl-en">cast</span>(<span class="pl-c1">__MODULE__</span>, object)
+
+<span class="pl-smi">@impl</span> <span class="pl-c1">true</span>
+<span class="pl-k">def</span> <span class="pl-en">handle_call</span>(object, <span class="pl-c">_from</span>, intern_state) <span class="pl-k">do</span> 
+  {<span class="pl-c1">:reply</span>, object, intern_state}
+<span class="pl-k">end</span>
+
+<span class="pl-smi">@impl</span> <span class="pl-c1">true</span>
+<span class="pl-k">def</span> <span class="pl-en">handle_cast</span>(object, intern_state) <span class="pl-k">do</span> 
+  {<span class="pl-c1">:noreply</span>, intern_state}
+<span class="pl-k">end</span></pre></div>
+<p>We can see here that you can call your GenServer by furnishing to the API the <code>&lt;PID&gt;</code> or the <code>:name</code> of your GenServer as first argument, and the
+request to be given as second argument. These calls will return
+the 2nd element of the tuple return by <code>handle_call/3</code> and the <code>:ok</code> atom for
+the cast.</p>
+<p>The handlers first element is the request passed by the <code>call/2</code> and
+<code>cast/2</code> functions. The second argument of the <code>handle_call</code> functions is
+the <code>&lt;PID&gt;</code> of the calling process. The last argument of these functions is
+the internal state of the server.<br>
+These handlers <strong>have</strong> to return a tuple, in
+which you can find at the first place the type of answer returned by the
+<strong><code>Genserver</code></strong>, at the second place the value returned by the <code>call/2</code> function,
+and at the last place the new internal value of your GenServer.</p>
+<h2>
+<a id="user-content-step-3---supervisor" class="anchor" href="#step-3---supervisor" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 3 - Supervisor</h2>
+<p>The <strong>Supervisor</strong> documentation is available
+<a href="https://https://hexdocs.pm/elixir/1.11.3/Supervisor.html" rel="nofollow">here</a>.</p>
+<p>There is two ways to use the <strong>Supervisor</strong> module:</p>
+<ol>
+<li>
+<p>The first way is to
+create a custom <strong>Supervisor</strong> module using(<code>use</code>) <strong><code>Supervisor</code></strong>.
+The defined module must implement the functions <code>start_link/0</code> and
+<code>init/1</code>.</p>
+<ul>
+<li>The function <code>start_link/0</code> allows you to launch your <strong>Supervisor</strong>
+</li>
+</ul>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">def</span> <span class="pl-en">start_link</span> <span class="pl-k">do</span>
+  {<span class="pl-c1">:ok</span>, <span class="pl-c">_</span>} <span class="pl-k">=</span> <span class="pl-en">Supervisor</span>.<span class="pl-en">start_link</span>(<span class="pl-c1">__MODULE__</span>, init_args, <span class="pl-c1">name:</span> <span class="pl-c1">__MODULE__</span>)
+<span class="pl-k">end</span></pre></div>
+<ul>
+<li>The function <code>init/1</code> is called by the function <code>Supervisor.start_link</code>
+called previously. This function should call the <strong><code>Supervisor</code></strong>'s <code>init/2</code> function as follows:</li>
+</ul>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">def</span> <span class="pl-en">init</span>(<span class="pl-c">_</span>) <span class="pl-k">do</span>  
+  children <span class="pl-k">=</span> [
+      {<span class="pl-en">MySupervisedModule</span>, [<span class="pl-c1">:hello</span>]}
+    ]
+  <span class="pl-en">Supervisor</span>.<span class="pl-en">init</span>(children, <span class="pl-c1">strategy:</span> <span class="pl-c1">:one_for_one</span>)
+<span class="pl-k">end</span></pre></div>
+<p>The <code>children</code> are what is called a child specirfication. This is a list of tuples with the first item being the supervised module, and the second item your module's <code>start_link/1</code> arguments. Note that if no arguments are needed, you can simply write the name of your module in the list of children:</p>
+<div class="highlight highlight-source-elixir"><pre>children <span class="pl-k">=</span> [
+      {<span class="pl-en">MySupervisedModule</span>, [<span class="pl-c1">:hello</span>]},
+      <span class="pl-en">MyOtherModule</span>
+    ]</pre></div>
+</li>
+<li>
+<p>You can also directly start a supervisor on your <strong><code>GenServer</code></strong> with the
+following code:</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defmodule</span> <span class="pl-en">TutoKBRWStack</span> <span class="pl-k">do</span>
+  <span class="pl-k">def</span> <span class="pl-en">start</span>(<span class="pl-c">_type</span>, <span class="pl-c">_args</span>) <span class="pl-k">do</span>
+
+    children <span class="pl-k">=</span> [<span class="pl-en">Server</span>.<span class="pl-en">Database</span>]
+    opts <span class="pl-k">=</span> [<span class="pl-c1">strategy:</span> <span class="pl-c1">:one_for_one</span>]
+    <span class="pl-en">Supervisor</span>.<span class="pl-en">start_link</span>(children, opts)
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+<p>This runs a supervisor using the default configuration.</p>
+</li>
+</ol>
+<p>For more information on how a supervisor starts and stops, and which functions are called in what order, have a closer look at the <a href="https://hexdocs.pm/elixir/Supervisor.html#module-start-and-shutdown" rel="nofollow">start and shutdown section</a> of the supervisor documentation.</p>
+<h2>
+<a id="user-content-step-4---my-key-value-database" class="anchor" href="#step-4---my-key-value-database" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 4 - My Key-Value database</h2>
+<p><strong>Exercise:</strong> create a <strong><code>GenServer</code></strong> module in your project to manage an <strong>ETS Table</strong> supervised by a <strong><code>Supervisor</code></strong> The type of entity stored in ETS table doesn't matter now, the idea here is to re-implement a key/value database.</p>
+<p>Your database <strong>must</strong> respect the <a href="https://en.wikipedia.org/wiki/Create,_read,_update_and_delete" rel="nofollow">CRUD</a> principles.</p>
+<p>Here is an example of what could be your file hierarchy:</p>
+<ul>
+<li>
+<code>lib/sever/database.ex</code> is the module containing our <strong><code>GenServer</code></strong>
+</li>
+<li>
+<code>lib/server/serv_supervisor.ex</code> is the supervisor (Following the first method)</li>
+<li>
+<code>lib/tuto_kbrw_stack.ex</code> is our application started by mix.</li>
+</ul>
+<p><em>Why not create some unit tests to verify that our database is fully functional ? :)</em></p>
+<h2>
+<a id="user-content-step-5---lets-fill-it-" class="anchor" href="#step-5---lets-fill-it-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 5 - Let's fill it !</h2>
+<p>Now that our database can store anything we want, let's add some usable information inside it !</p>
+<ul>
+<li><strong>The data</strong></li>
+</ul>
+<p>You will find attached to this formation a ZIP file <code>orders_dump.zip</code> containing a bunch of JSON files.<br>
+It should look something like this:</p>
+<pre><code>  orders_dump/
+  |-- orders_chunk0.json
+  |-- orders_chunk1.json
+  |-- orders_chunk10.json
+  |-- etc.
+</code></pre>
+<p>Each one of this files contains a list of orders, I will let you look into it and familiarize yourself with the different fields representing an order.</p>
+<ul>
+<li><strong>The loader</strong></li>
+</ul>
+<p>We will now have to load this orders inside our key-value database.<br>
+We will chose the field <strong>id</strong> of each order as the key, and store a <strong>Map (%{})</strong> as value.<br>
+This Map will be the representation in Elixir of the order's JSON.</p>
+<p>For that we will use an external dependency called <a href="https://hexdocs.pm/poison/api-reference.html" rel="nofollow">Poison</a>.</p>
+<hr>
+<p><strong>Exercice</strong>:<br>
+Create a function <code>load_to_database</code> inside a <strong>Module</strong> <code>JsonLoader</code>.<br>
+The function <strong>must</strong> respect this prototype <code>load_to_database/2(database, json_file)</code><br>
+The function will parse the <code>json_file</code>, and write inside the <code>database</code> the key value pair defined as follow:<br>
+<code>{order_id, %{order_data}}</code>.<br>
+<strong>Poison</strong> will help you convert JSON to an Elixir Map representation.</p>
+<p>I should be able to call it like this:<br>
+<code>JsonLoader.load_to_database my_kv_db, "/path/to/my/json.json"</code></p>
+<hr>
+<p><em>Usefull links:</em></p>
+<ul>
+<li><a href="https://hex.pm/docs/usage" rel="nofollow">https://hex.pm/docs/usage</a></li>
+<li><a href="https://hexdocs.pm/poison/api-reference.html" rel="nofollow">https://hexdocs.pm/poison/api-reference.html</a></li>
+<li><a href="https://hexdocs.pm/elixir/File.html" rel="nofollow">https://hexdocs.pm/elixir/File.html</a></li>
+<li><a href="https://www.json.org/index.html" rel="nofollow">https://www.json.org/index.html</a></li>
+</ul>
+<p><em>If you have any questions, do not hesitate to <a href="http://www.catb.org/~esr/faqs/smart-questions.html" rel="nofollow">ask</a> on the #formation channel</em></p>
+<h2>
+<a id="user-content-step-6---the-search-engine" class="anchor" href="#step-6---the-search-engine" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 6 - The search engine</h2>
+<p>Perfect ! Now we're getting somewhere.<br>
+We have a functional KV Database, some cool orders in it, and we can sear... wait... no... we can't search inside our DB ! :(<br>
+We're gonna fix that ! After all, aren't we  <strong>Elixir ninjas</strong> ?</p>
+<hr>
+<p><strong>Exercice</strong>:<br>
+Create a function <code>search</code> inside your <code>Database</code> module.<br>
+The function <strong>must</strong> respect this prototype <code>search/2(database, criteria)</code><br>
+Where <code>criteria</code> is a <strong>List []</strong> containing couples of Key / Values.<br>
+The function must check on each orders if the corresponding keys have the same values, using a <em>OR</em> operation (see example).  If yes, the order is appended to a result list which will be return by the function.</p>
+<p><strong><em>Example:</em></strong></p>
+<div class="highlight highlight-source-elixir"><pre>  orders <span class="pl-k">=</span> [
+    %{<span class="pl-s"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>toto<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>key<span class="pl-pds">"</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">42</span>},
+    %{<span class="pl-s"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>test<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>key<span class="pl-pds">"</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>42<span class="pl-pds">"</span></span>},
+    %{<span class="pl-s"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>tata<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>key<span class="pl-pds">"</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Apero?},</span>
+<span class="pl-s">    %{<span class="pl-pds">"</span></span>id<span class="pl-s"><span class="pl-pds">"</span> =&gt; <span class="pl-pds">"</span></span>kbrw<span class="pl-s"><span class="pl-pds">"</span>, <span class="pl-pds">"</span></span>key<span class="pl-s"><span class="pl-pds">"</span> =&gt; <span class="pl-pds">"</span></span><span class="pl-en">Oh</span> yeah<span class="pl-s"><span class="pl-pds">"</span>},</span>
+<span class="pl-s">  ]</span>
+<span class="pl-s">  ## ...</span>
+<span class="pl-s">  ## Load the orders inside the database <span class="pl-pds">"</span></span>kv_db<span class="pl-s"><span class="pl-pds">"</span></span>
+<span class="pl-s">  ## ...</span>
+<span class="pl-s"></span>
+<span class="pl-s">  {:ok, orders} = Database.search(kv_db, [{<span class="pl-pds">"</span></span>key<span class="pl-s"><span class="pl-pds">"</span>, <span class="pl-pds">"</span></span><span class="pl-c1">42</span><span class="pl-s"><span class="pl-pds">"</span>}])</span>
+<span class="pl-s">  orders = [%{<span class="pl-pds">"</span></span>id<span class="pl-s"><span class="pl-pds">"</span> =&gt; <span class="pl-pds">"</span></span>test<span class="pl-s"><span class="pl-pds">"</span>, <span class="pl-pds">"</span></span>key<span class="pl-s"><span class="pl-pds">"</span> =&gt; <span class="pl-pds">"</span></span><span class="pl-c1">42</span><span class="pl-s"><span class="pl-pds">"</span>}]</span>
+<span class="pl-s"></span>
+<span class="pl-s">  {:ok, orders} = Database.search(kv_db, [{<span class="pl-pds">"</span></span>key<span class="pl-s"><span class="pl-pds">"</span>, <span class="pl-pds">"</span></span><span class="pl-c1">42</span><span class="pl-s"><span class="pl-pds">"</span>}, {<span class="pl-pds">"</span></span>key<span class="pl-s"><span class="pl-pds">"</span>, 42}])</span>
+<span class="pl-s">  orders = [%{<span class="pl-pds">"</span></span>id<span class="pl-s"><span class="pl-pds">"</span> =&gt; <span class="pl-pds">"</span></span>test<span class="pl-s"><span class="pl-pds">"</span>, <span class="pl-pds">"</span></span>key<span class="pl-s"><span class="pl-pds">"</span> =&gt; <span class="pl-pds">"</span></span><span class="pl-c1">42</span><span class="pl-s"><span class="pl-pds">"</span>}, %{<span class="pl-pds">"</span></span>id<span class="pl-s"><span class="pl-pds">"</span> =&gt; <span class="pl-pds">"</span></span>toto<span class="pl-s"><span class="pl-pds">"</span>, <span class="pl-pds">"</span></span>key<span class="pl-s"><span class="pl-pds">"</span> =&gt; 42}]</span>
+<span class="pl-s"></span>
+<span class="pl-s">  {:ok, orders} = Database.search(kv_db, [{<span class="pl-pds">"</span></span>id<span class="pl-s"><span class="pl-pds">"</span>, <span class="pl-pds">"</span></span><span class="pl-c1">52</span><span class="pl-s"><span class="pl-pds">"</span>}, {<span class="pl-pds">"</span></span>id<span class="pl-s"><span class="pl-pds">"</span>, <span class="pl-pds">"</span></span><span class="pl-en">ThisIsATest</span><span class="pl-s"><span class="pl-pds">"</span>}])</span>
+<span class="pl-s">  orders = []</span></pre></div>
+<hr>
+<h2>
+<a id="user-content-question-time-" class="anchor" href="#question-time-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Question time !</h2>
+<ul>
+<li>Why use an ETS table ?</li>
+<li>What are the advantages of wrapping an ETS table inside a GenServer ?</li>
+<li>What is a <code>Behaviour</code> in Elixir ?</li>
+</ul>
+<p><strong>Go further</strong></p>
+<ul>
+<li>What are the differences between a <code>Protocol</code> and a <code>Behaviour</code> ?</li>
+<li>In which cases would you want to use a <code>Protocol</code> ? a <code>Behaviour</code> ?</li>
+</ul>
+<hr>
+<p><a href="chap0.html">Prev Chapter</a> <strong>Chapter 1</strong> <a href="chap2.html">Next Chapter</a></p>
+
+</body>
+</html>
+</article>

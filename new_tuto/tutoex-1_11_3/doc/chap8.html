@@ -1,0 +1,297 @@
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+margin: 0 auto;
+padding: 45px;
+}
+
+@media (max-width: 767px) {
+  .markdown-body {
+padding: 15px;
+  }
+}
+</style>
+<article class="markdown-body">
+<!DOCTYPE html>
+<html>
+<head>
+  <title>chap8/README.md</title>
+  <link rel="stylesheet" href="../.github-markdown-css/github-markdown.css">
+</head>
+<body>
+<h1>
+<a id="user-content-chapter-8---rulex-exfsm-and-have-fun" class="anchor" href="#chapter-8---rulex-exfsm-and-have-fun" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Chapter 8 - Rulex, ExFSM and Have fun</h1>
+<p>In this chapter we will enable the payments of our orders. To achieve that we will create a tiny <a href="https://en.wikipedia.org/wiki/Finite-state_machine" rel="nofollow">Finite-state machine (FSM)</a>.</p>
+<p>By doing so, you will discover two new home-made libraries: <a href="http://github.com/kbrw/exfsm">ExFSM</a> and <a href="http://github.com/kbrw/rulex">Rulex</a>.</p>
+<h2>
+<a id="user-content-step-0---prerequisite" class="anchor" href="#step-0---prerequisite" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 0 - Prerequisite</h2>
+<h3>
+<a id="user-content-the-fsm" class="anchor" href="#the-fsm" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The FSM</h3>
+<p>The FSM looks like the following schema. It's a very light FSM that allows you to change the status of your command from unpaid to paid.</p>
+<p><a href="./img/FSM.png" target="_blank" rel="noopener noreferrer"><img src="./img/FSM.png" alt="FSM" style="max-width:100%;"></a></p>
+<h3>
+<a id="user-content-initialization-of-riak" class="anchor" href="#initialization-of-riak" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Initialization of Riak</h3>
+<p>Before anything, we need to assure that all our values in the database have their status set to our FSM default state. We want that all the commands on Riak respect the following property:</p>
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">command</span>.<span class="pl-c1">status</span>.<span class="pl-smi">state</span> <span class="pl-k">==</span> <span class="pl-s"><span class="pl-pds">'</span>init<span class="pl-pds">'</span></span>;</pre></div>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">def</span> <span class="pl-en">initialize_commands</span>(bucket) <span class="pl-k">do</span> 
+  <span class="pl-en">Riak</span>.get_keys(bucket)
+    <span class="pl-k">|&gt;</span> <span class="pl-en">Enum</span>.map(
+      <span class="pl-k">fn</span> key <span class="pl-k">-&gt;</span> 
+        <span class="pl-c"><span class="pl-c">#</span> update the json here </span>
+      <span class="pl-k">end</span>)
+  <span class="pl-k">end</span> </pre></div>
+<h3>
+<a id="user-content-the-mix-dependencies" class="anchor" href="#the-mix-dependencies" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The mix dependencies</h3>
+<p>We will need the following dependencies in our <strong><code>mix.exs</code></strong></p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defp</span> <span class="pl-en">deps</span> <span class="pl-k">do</span> 
+  [
+    <span class="pl-k">..</span>., 
+    {<span class="pl-c1">:rulex</span>, <span class="pl-c1">git:</span> <span class="pl-s"><span class="pl-pds">"</span>https://github.com/kbrw/rulex.git<span class="pl-pds">"</span></span>},
+    {<span class="pl-c1">:exfsm</span>, <span class="pl-c1">git:</span> <span class="pl-s"><span class="pl-pds">"</span>https://github.com/kbrw/exfsm.git<span class="pl-pds">"</span></span>}
+  ]</pre></div>
+<h3>
+<a id="user-content-the-macros" class="anchor" href="#the-macros" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The Macros</h3>
+<p>To use correctly <strong><code>ExFSM</code></strong> and <strong><code>Rulex</code></strong>, we will need to understand correctly the macros and how
+it is implemented in <strong>Elixir</strong>.</p>
+<p>A Macro in <strong>Elixir</strong> is, like in C/C++, a sort of function executed at the compilation time. They are
+used to generate code or modify it.</p>
+<p>When elixir is compiled, the code is transformed into an AST that you can obtain by using the <code>quote</code>
+keyword.</p>
+<div class="highlight highlight-source-elixir"><pre>iex(<span class="pl-c1">6</span>)<span class="pl-k">&gt;</span> <span class="pl-k">quote</span> <span class="pl-k">do</span> 
+<span class="pl-k">..</span>.(<span class="pl-c1">6</span>)<span class="pl-k">&gt;</span> <span class="pl-c1">1</span> <span class="pl-k">+</span> <span class="pl-c1">2</span> <span class="pl-k">+</span> <span class="pl-c1">3</span>
+<span class="pl-k">..</span>.(<span class="pl-c1">6</span>)<span class="pl-k">&gt;</span> <span class="pl-k">end</span> 
+{<span class="pl-c1">:+</span>, [<span class="pl-c1">context:</span> <span class="pl-en">Elixir</span>, <span class="pl-c1">import:</span> <span class="pl-en">Kernel</span>],
+ [{<span class="pl-c1">:+</span>, [<span class="pl-c1">context:</span> <span class="pl-en">Elixir</span>, <span class="pl-c1">import:</span> <span class="pl-en">Kernel</span>], [<span class="pl-c1">1</span>, <span class="pl-c1">2</span>]}, <span class="pl-c1">3</span>]}</pre></div>
+<p>As you can observe, the AST is represented by a tuple of 3 elements. (<em>It can also be one elements if
+this element as the same representation compiled and not (<code>1</code>, <code>"toto"</code>, ...)</em>). With :</p>
+<ul>
+<li>Name of the block</li>
+<li>Contexte of the block in a list</li>
+<li>Code block in a list of instruction</li>
+</ul>
+<p>When you execute a macro, it takes as input the AST of the code you passed and expects an AST as output.<br>
+Let's create a macro that create a function from a do block and apply a prefix on the function name.<br>
+It will be used as follows</p>
+<div class="highlight highlight-source-elixir"><pre>defmodified toto(a,b,c) <span class="pl-k">do</span> 
+  a<span class="pl-k">+</span>b<span class="pl-k">+</span>c
+<span class="pl-k">end</span></pre></div>
+<p>And it will create the function <code>macroed_toto/3</code>.</p>
+<p>First let's observe the generated AST from <code>defmodified</code></p>
+<div class="highlight highlight-source-elixir"><pre>iex(<span class="pl-c1">1</span>)<span class="pl-k">&gt;</span> <span class="pl-k">quote</span> <span class="pl-k">do</span>
+<span class="pl-k">..</span>.(<span class="pl-c1">1</span>)<span class="pl-k">&gt;</span> defmodified toto(a,b,c) <span class="pl-k">do</span>
+<span class="pl-k">..</span>.(<span class="pl-c1">1</span>)<span class="pl-k">&gt;</span> a<span class="pl-k">+</span>b<span class="pl-k">+</span>c
+<span class="pl-k">..</span>.(<span class="pl-c1">1</span>)<span class="pl-k">&gt;</span> <span class="pl-k">end</span>
+<span class="pl-k">..</span>.(<span class="pl-c1">1</span>)<span class="pl-k">&gt;</span> <span class="pl-k">end</span>
+{<span class="pl-c1">:defmodified</span>, [],
+ [{<span class="pl-c1">:toto</span>, [], [{<span class="pl-c1">:a</span>, [], <span class="pl-en">Elixir</span>}, {<span class="pl-c1">:b</span>, [], <span class="pl-en">Elixir</span>}, {<span class="pl-c1">:c</span>, [], <span class="pl-en">Elixir</span>}]},
+  [<span class="pl-c1">do:</span> {<span class="pl-c1">:+</span>, [<span class="pl-c1">context:</span> <span class="pl-en">Elixir</span>, <span class="pl-c1">import:</span> <span class="pl-en">Kernel</span>],
+    [{<span class="pl-c1">:+</span>, [<span class="pl-c1">context:</span> <span class="pl-en">Elixir</span>, <span class="pl-c1">import:</span> <span class="pl-en">Kernel</span>],
+      [{<span class="pl-c1">:a</span>, [], <span class="pl-en">Elixir</span>}, {<span class="pl-c1">:b</span>, [], <span class="pl-en">Elixir</span>}]}, {<span class="pl-c1">:c</span>, [], <span class="pl-en">Elixir</span>}]}]]}
+</pre></div>
+<p>If we consider here that <code>defmodified</code> is our macro, we will see that our macro will take as parameters</p>
+<div class="highlight highlight-source-elixir"><pre>{name, environment, param}, blocks</pre></div>
+<p>with here:</p>
+<ul>
+<li>
+<code>name</code> is <code>toto</code>
+</li>
+<li>
+<code>environment</code> the environment module of the macro call</li>
+<li>
+<code>param</code> the list of parameters of the function: <code>[a,b,c]</code>
+</li>
+<li>
+<code>blocks</code> a list containing the instruction of the function</li>
+</ul>
+<p>So, to create the function we will create a <strong>Tuple</strong> of the name <code>:def</code> containing the information of
+the function as the ouput AST should be:</p>
+<div class="highlight highlight-source-elixir"><pre>iex(<span class="pl-c1">24</span>)<span class="pl-k">&gt;</span> <span class="pl-k">quote</span> <span class="pl-k">do</span> 
+<span class="pl-k">..</span>.(<span class="pl-c1">24</span>)<span class="pl-k">&gt;</span> <span class="pl-k">def</span> macroed_toto(a,b) <span class="pl-k">do</span> 
+<span class="pl-k">..</span>.(<span class="pl-c1">24</span>)<span class="pl-k">&gt;</span> a<span class="pl-k">+</span>b
+<span class="pl-k">..</span>.(<span class="pl-c1">24</span>)<span class="pl-k">&gt;</span> <span class="pl-k">end</span> 
+<span class="pl-k">..</span>.(<span class="pl-c1">24</span>)<span class="pl-k">&gt;</span> <span class="pl-k">end</span> 
+{<span class="pl-c1">:def</span>, [<span class="pl-c1">context:</span> <span class="pl-en">Elixir</span>, <span class="pl-c1">import:</span> <span class="pl-en">Kernel</span>],
+ [{<span class="pl-c1">:macroed_toto</span>, [<span class="pl-c1">context:</span> <span class="pl-en">Elixir</span>], [{<span class="pl-c1">:a</span>, [], <span class="pl-en">Elixir</span>}, {<span class="pl-c1">:b</span>, [], <span class="pl-en">Elixir</span>}]},
+  [<span class="pl-c1">do:</span> {<span class="pl-c1">:+</span>, [<span class="pl-c1">context:</span> <span class="pl-en">Elixir</span>, <span class="pl-c1">import:</span> <span class="pl-en">Kernel</span>],
+    [{<span class="pl-c1">:a</span>, [], <span class="pl-en">Elixir</span>}, {<span class="pl-c1">:b</span>, [], <span class="pl-en">Elixir</span>}]}]]}</pre></div>
+<p>We need to create the external tuple with the name set to <code>:def</code> and the environment of the macro definition</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defmodule</span> <span class="pl-en">ModifiedMacro</span> <span class="pl-k">do</span>
+  <span class="pl-k">defp</span> <span class="pl-en">concatenate_atom</span>(a, b) <span class="pl-k">do</span>
+    <span class="pl-en">Atom</span>.to_string(a)<span class="pl-k">&lt;&gt;</span><span class="pl-en">Atom</span>.to_string(b) <span class="pl-k">|&gt;</span> <span class="pl-en">String</span>.to_atom
+  <span class="pl-k">end</span>
+
+  <span class="pl-k">defmacro</span> <span class="pl-en">defmodified</span>({name, env, param}, blocks) <span class="pl-k">do</span>
+    {<span class="pl-c1">:def</span>, env, [{concatenate_atom(<span class="pl-c1">:macroed_</span>, name), env, param}, blocks]}
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span>
+
+<span class="pl-k">defmodule</span> <span class="pl-en">User</span> <span class="pl-k">do</span> 
+  <span class="pl-k">require</span> <span class="pl-en">ModifiedMacro</span>
+  <span class="pl-k">import</span> <span class="pl-en">ModifiedMacro</span> 
+  
+  defmodified my_function(a,b) <span class="pl-k">do</span> 
+    a<span class="pl-k">+</span>b
+  <span class="pl-k">end</span> 
+<span class="pl-k">end</span></pre></div>
+<p>After compilation, the module <strong><code>User</code></strong> implements the function <code>macroed_my_function/2</code></p>
+<div class="highlight highlight-source-elixir"><pre>iex(<span class="pl-c1">1</span>)<span class="pl-k">&gt;</span> <span class="pl-en">User</span>.
+macroed_my_function<span class="pl-k">/</span><span class="pl-c1">2</span>
+
+iex(<span class="pl-c1">1</span>)<span class="pl-k">&gt;</span> <span class="pl-en">User</span>.macroed_my_function(<span class="pl-c1">1</span>,<span class="pl-c1">2</span>)
+<span class="pl-c1">3</span></pre></div>
+<h2>
+<a id="user-content-step-1---exfsm" class="anchor" href="#step-1---exfsm" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 1 - ExFSM</h2>
+<p>As we want to understand how the modules works, we will have to go in the source directly.</p>
+<p>Dive in the source of <a href="https://github.com/kbrw/exfsm"><strong>ExFSM</strong></a> at <code>deps/exfsm</code>.
+In the file <code>exfsm.ex</code> you will find the definition of the macro <code>deftrans</code>.</p>
+<p>This macro add to your FSM(<code>@fsm</code>) a transition from the <code>initial_state</code> and the <code>final_state</code>.</p>
+<div class="highlight highlight-source-elixir"><pre>deftrans initial_state({<span class="pl-c1">:transition_event</span>, []}, object) <span class="pl-k">do</span> 
+  {<span class="pl-c1">:next_state</span>, <span class="pl-c1">:final_state</span>, order}</pre></div>
+<p>After defining all the transition of our FSM, we will need to implement the protocol of our FSM.<br>
+<strong>If you are not familiar with the principle of the protocols have a look <a href="https://elixir-lang.org/getting-started/protocols.html" rel="nofollow">here</a>.</strong></p>
+<p>In this implementation, you need to provide the following functions:</p>
+<ul>
+<li>
+<code>state_name</code> that takes as parameter your order and return as an <strong>Atom</strong> the state of your order.</li>
+<li>
+<code>set_state_name</code> that takes as parameter your order and the name of your order, and return your order
+with a state updated to the new state.</li>
+<li>
+<code>handlers</code> is the list of all the FSM modules. Here we have only our <code>MyFSM</code> module.</li>
+</ul>
+<p>A simple working 2 states FSM is written as follows:</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defimpl</span> <span class="pl-en">ExFSM</span>.<span class="pl-en">Machine</span>.<span class="pl-en">State</span>, for: <span class="pl-en">Map</span> <span class="pl-k">do</span>
+  <span class="pl-k">def</span> <span class="pl-en">state_name</span>(order), <span class="pl-c1">do:</span> <span class="pl-en">String</span>.to_atom(order[<span class="pl-s"><span class="pl-pds">"</span>status<span class="pl-pds">"</span></span>][<span class="pl-s"><span class="pl-pds">"</span>state<span class="pl-pds">"</span></span>])
+  <span class="pl-k">def</span> <span class="pl-en">set_state_name</span>(order, name), <span class="pl-c1">do:</span> <span class="pl-en">Kernel</span>.get_and_update_in(order[<span class="pl-s"><span class="pl-pds">"</span>status<span class="pl-pds">"</span></span>][<span class="pl-s"><span class="pl-pds">"</span>state<span class="pl-pds">"</span></span>], <span class="pl-k">fn</span> state <span class="pl-k">-&gt;</span> {state, <span class="pl-en">Atom</span>.to_string(name)} <span class="pl-k">end</span>)
+  <span class="pl-k">def</span> <span class="pl-en">handlers</span>(order) <span class="pl-k">do</span>
+    [<span class="pl-en">MyFSM</span>]
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span>
+
+<span class="pl-k">defmodule</span> <span class="pl-en">MyFSM</span> <span class="pl-k">do</span>                                                                                      
+  <span class="pl-k">use</span> <span class="pl-en">ExFSM</span>
+
+  deftrans init({<span class="pl-c1">:process_payment</span>, []}, order) <span class="pl-k">do</span> 
+    {<span class="pl-c1">:next_state</span>, <span class="pl-c1">:not_verified</span>, order}
+  <span class="pl-k">end</span> 
+
+  deftrans not_verified({<span class="pl-c1">:verfication</span>, []}, order) <span class="pl-k">do</span> 
+    {<span class="pl-c1">:next_state</span>, <span class="pl-c1">:finished</span>, order}
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+<p>Now if we want to make a transition on an order we can call our FSM as:</p>
+<div class="highlight highlight-source-elixir"><pre>{<span class="pl-c1">:next_state</span>, updated_order} <span class="pl-k">=</span> <span class="pl-en">ExFSM</span>.<span class="pl-en">Machine</span>.event(order, {<span class="pl-c1">:process_payment</span>, []})</pre></div>
+<hr>
+<h3>
+<a id="user-content-explaination-of-the-exfsm-module" class="anchor" href="#explaination-of-the-exfsm-module" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Explaination of the ExFSM Module</h3>
+<p>Now that we understand how to use the <strong><code>ExFSM</code></strong> module, we will dive into the source code to
+understand exactly what is expected by the macro.</p>
+<div class="highlight highlight-source-elixir"><pre>  <span class="pl-k">defmacro</span> <span class="pl-en">deftrans</span>({state, _meta, [{trans, _param} <span class="pl-k">|</span> _rest]} <span class="pl-k">=</span> signature, body_block) <span class="pl-k">do</span>                      </pre></div>
+<p>This macro add to the <a href="https://elixir-lang.org/getting-started/module-attributes.html" rel="nofollow">module attribute</a> <code>@fsm</code> (which is a map)
+the transition. This transition key is the tuple <code>{current_state, action}</code> (for instance
+<code>{:init, :process_payment}</code>) and the body of the transition is the tuple <code>{module, do_block}</code>.</p>
+<p>Now let's have a look on how the module works when we call the <code>ExFSM.Machine.event/2</code>.</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">def</span> <span class="pl-en">event</span>(state, {action, params}) <span class="pl-k">do</span></pre></div>
+<p>First, the event search the handler to execute for this couple <code>{state, action}</code> by executing the
+function <code>find_handler/1</code> which will call <code>find_handler/2</code> with parameters:</p>
+<ul>
+<li>The tuple <code>{state, action}</code>
+</li>
+<li>The list of all modules returned by the implementation of <code>handlers/1</code>
+</li>
+</ul>
+<p>This will return the transition <code>{state, action}</code> in the map created by the contenation of all the FSM
+in the second parameter.<br>
+This concatenation is done by the function <code>fsm/1</code>. This concatenation is done by overwriting.
+It means that the last FSM with the transition {:state, :transition} will be written in the new FSM.
+That is why, we need to put the default FSM first in the list of <code>handlers/1</code>.<br>
+Then in the <code>event/2</code> function, if the given transition exists in the FSM, the associated do block is
+executed.</p>
+<hr>
+<h2>
+<a id="user-content-step-2---rulex" class="anchor" href="#step-2---rulex" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 2 - Rulex</h2>
+<p>Now that we have an FSM, we will work with multiple FSM! Let's have a look in <a href="https://github.com/kbrw/rulex"><strong><code>Rulex</code></strong></a>.</p>
+<p>The aim now that you understand how <strong>ExFSM</strong> works is to implement different payment solutions in our FSM. <strong><code>Rulex</code></strong> will allow us to
+pattern match the FSM that could handle our call.<br>
+Here we will have a FSM for: Paypal, Stripe, and the default payment method: Delivery.<br>
+In the <strong><code>Rulex</code></strong> module, we will use the macro <code>defrule</code>.<br>
+This macro allows you to accumulate in an object through an accumulator under a certain condition. This condition can be updated easily
+by changing the input of the function <code>apply_rules/2</code>.<br>
+The same as for <strong><code>ExFSM</code></strong> you can dive into the code of the <strong><code>Rulex</code></strong> module.</p>
+<hr>
+<h3>
+<a id="user-content-explaination-of-the-rulex-module" class="anchor" href="#explaination-of-the-rulex-module" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Explaination of the Rulex module</h3>
+<p>The macro <code>defrule</code> use the function <code>rule_fun/5</code>. This function take as parameters:</p>
+<ul>
+<li>
+<code>name</code> which is the name of the macro</li>
+<li>
+<code>param_quote</code> which is a quoted form of the parameters given to our macro (first parameters of the
+macro).</li>
+<li>
+<code>acc_quote</code> the quoted form of the accumulator.</li>
+<li>
+<code>body</code> is quoted form of the body of our macro (<code>do</code> block)</li>
+<li>
+<code>guard_quote</code> the quoted form of the guards. (<code>when is_integer(toto)</code> is called a guard in elixir)</li>
+</ul>
+<p>This function define the function <code>apply_rules/4</code> which will be called by the function <code>apply_rules/2</code> defined in the <code>__before_compile__</code> section injected in our module by the <code>__using__</code> macro.</p>
+<hr>
+<p>Now let's define a rule as example.</p>
+<div class="highlight highlight-source-elixir"><pre>defrule paypal_fsm(%{<span class="pl-c1">payment_methop:</span> <span class="pl-c1">:paypal</span>} <span class="pl-k">=</span> order, acc), <span class="pl-c1">do:</span> {<span class="pl-c1">:ok</span>, [<span class="pl-en">MyFSM</span>.<span class="pl-en">Paypal</span> <span class="pl-k">|</span> acc]}</pre></div>
+<ul>
+<li>The first argument is the pattern match of the parameter given as first argument to <code>apply_rules/2</code>
+</li>
+<li>The second argument is the current accumulator (as seen in the explaination paragraph)</li>
+<li>The <code>do</code> blocks is the accumulation of the element in the accumulator (here our FSM)</li>
+</ul>
+<h2>
+<a id="user-content-step-3---handle-the-transitions-genserver" class="anchor" href="#step-3---handle-the-transitions-genserver" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 3 - Handle the transitions: GenServer</h2>
+<p>Now we will see how to use our new modulable FSM.</p>
+<div class="highlight highlight-source-elixir"><pre>defrule paypal_fsm(%{<span class="pl-s"><span class="pl-pds">"</span>payment_method<span class="pl-pds">"</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>paypal<span class="pl-pds">"</span></span>} <span class="pl-k">=</span> order, acc), <span class="pl-c1">do:</span> {<span class="pl-c1">:ok</span>, [<span class="pl-en">MyFSM</span>.<span class="pl-en">Paypal</span> <span class="pl-k">|</span> acc]}</pre></div>
+<p><em>With this rule you need to set the <code>payment_method</code> attribute of your order to change the FSM used on the call</em></p>
+<hr>
+<p><strong>Exercise:</strong></p>
+<ul>
+<li>
+<p>Setup an FSM and implement a GenServer module that will handle the transitions of your <code>order FSM</code> in a <strong>transactionnal manner</strong> (processes can only treat one message at a time, the rest is kept ordered in their message queue).</p>
+<ul>
+<li>The GenServer will be started on demand</li>
+<li>When a transaction needs to be made.
+<ul>
+<li>It will be started with the order as its initial state (the id must be provided)</li>
+<li>Process the transaction in an <code>handle_call</code>
+</li>
+<li>Update the state of the order in Riak</li>
+<li>Return the updated order or an error (<code>:action_unavailable</code>)</li>
+<li>Shutdown once all that is done.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Once you're done with that, add a new Web API to your project that triggers a transitions on an order FSM, and return the new order or an error.</p>
+</li>
+<li>
+<p>Link it to your <code>pay</code> button on your <code>orders</code> page.</p>
+</li>
+</ul>
+<p><em>Take some time to play with it, display the status of your order in your table, and make it change once the transaction is done.<br>
+Display an error on your front if the action triggered is not available.</em></p>
+<hr>
+<h2>
+<a id="user-content-question-time-" class="anchor" href="#question-time-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Question time !</h2>
+<ul>
+<li>What is the signifiaction of <strong>FSM</strong> ?</li>
+<li>Can you explain what does <code>quote</code> ?</li>
+<li>Is Rulex result based on the first true value, all the values, or the last matched value ?</li>
+<li>Can you show me in cmd line an exemple of FSM transition?</li>
+</ul>
+<hr>
+<p><a href="chap7.html">Prev Chapter</a> <strong>Chapter 8</strong> <a href="chap9.html">Next Chapter</a></p>
+
+</body>
+</html>
+</article>

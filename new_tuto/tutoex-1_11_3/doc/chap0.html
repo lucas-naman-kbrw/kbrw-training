@@ -1,0 +1,162 @@
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+margin: 0 auto;
+padding: 45px;
+}
+
+@media (max-width: 767px) {
+  .markdown-body {
+padding: 15px;
+  }
+}
+</style>
+<article class="markdown-body">
+<!DOCTYPE html>
+<html>
+<head>
+  <title>chap0/README.md</title>
+  <link rel="stylesheet" href="../.github-markdown-css/github-markdown.css">
+</head>
+<body>
+<h1>
+<a id="user-content-introduction" class="anchor" href="#introduction" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Introduction</h1>
+<p>You're about to start your KBRW training. This course will provide you with some guiding through the setup and building a minimalist web project from scratch, KBRW style! You must understand couple of things though before you begin your journey:</p>
+<ul>
+<li>
+<p><strong>You must code !</strong> Reading some docs and tutorials is always a good start, but it's only by getting your hands dirty and trying to make something of what you just learned that you'll really learn something.</p>
+</li>
+<li>
+<p><strong>You must struggle !</strong> A big part of this training is about you struggling with some setup or some code. We want you to get the full experience of working on project at KBRW. Issues you'll deal with now will make you stronger and faster when you'll meet them again on your futur project.</p>
+</li>
+<li>
+<p><strong>You must ask for help</strong> When you feel you've struggled for too long, don't hesitate to ask arround, to your futur colleagues and especially to your KBRW tutor. We'll always find time to help you move pass this obstacle.</p>
+</li>
+</ul>
+<p>Finally, as much effort as we put in this training, it's most likely outdated... Some parts or lines of code may not work, so you'll have to dig and find for yourself a path to resolution. But in case you're really struggling with something, checkout our #formation channel on Slack, as someone has probably already had the same issue. If not, ask arround, we'll help you get there.</p>
+<p>At the end of each chapter, you'll be asked to implement a new part of your project using what you just learnt. It is important that you take time to do it by yourself before checking out the correction.</p>
+<p>To follow your evolution and make sure you went through the entire training like a champion we ask you to regularly commit and push your work to a remote Git repository. Your tutor will regularly assess your progression and give you feedback on your work.</p>
+<p>On your first week at KBRW you'll be asked to run and present your project from start to end to someone and detail the work and difficulties you went through to get there. This is not an evaluation, we just want to make sure you're fully armed before you start kicking some ass on one of our projects ;-)</p>
+<p>Remember, this training is not easy. We don't expect you to finish it in a week. We generally give you a full month to complete it, so please take the time you need to do it thoroughly, so you fully understand our tools and ways of building projects.</p>
+<h1>
+<a id="user-content-your-work-environnement" class="anchor" href="#your-work-environnement" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Your work environnement</h1>
+<p>For you to have the best work environment for your training we recommand you run:</p>
+<ul>
+<li>The lastest <strong>Ubuntu Long Term Support version (v 20.04 right now)</strong>, or equivalent</li>
+<li>Or the <strong>second to last macOS version (v 10.13 right now)</strong> if you're a <strong>Mac</strong> user</li>
+</ul>
+<p>We recommend you <strong>never</strong> use the latest, bleeding edge version of anything, or you'll risk wasting time debugging some unseen, undocumented issues. And that's just not the purpose of this training as we prefer you to focus on our stack.</p>
+<h1>
+<a id="user-content-prerequisite" class="anchor" href="#prerequisite" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prerequisite</h1>
+<p>First thing first, to follow this training you will need to have some good basis in Elixir. So before you follow this course you <strong>must</strong> have done the entire <a href="https://elixir-lang.org/getting-started/introduction.html" rel="nofollow">Elixir Getting Started</a> followed by the <a href="https://elixir-lang.org/getting-started/mix-otp/introduction-to-mix.html" rel="nofollow">Introduction to Mix</a>.</p>
+<p>Once you feel like you are a true Elixir Ninja, you can read what's below and start your KBRW training.</p>
+<p><strong>Good luck ! ;-)</strong></p>
+<h1>
+<a id="user-content-chapter-0---elixir-asdf-and-mix" class="anchor" href="#chapter-0---elixir-asdf-and-mix" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Chapter 0 - Elixir, ASDF and Mix</h1>
+<p>In this chapter we will get more familiar with <strong>Elixir</strong>, <strong>asdf</strong> and <strong>mix</strong>.</p>
+<p>Before coding anything, remember to create your git repository so we can follow your progression.</p>
+<h2>
+<a id="user-content-step-0" class="anchor" href="#step-0" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 0</h2>
+<p>In this step we will introduce you to <code>asdf</code>.</p>
+<p><code>asdf</code> is a software version manager, available on <a href="https://github.com/asdf-vm/asdf">GitHub</a>.</p>
+<p>In this tutorial, we will use <strong>Elixir 1.11.3</strong>, the latest version of Elixir. It may not be available as a package for your OS, but asdf provides you an with easy way to install it.</p>
+<p>First we need to clone and install <code>asdf</code> in our home directory as described
+on the <code>asdf</code> README.</p>
+<p>Then we need to install the <strong>Erlang</strong> and the <strong>Elixir</strong> plugins. For that,
+you simply have to run the following commands.</p>
+<pre><code>asdf plugin-add erlang
+asdf plugin-add elixir
+asdf install erlang 22.0
+asdf install elixir 1.11.3
+asdf global erlang 22.0
+asdf global elixir 1.11.3
+</code></pre>
+<p><em><code>erlang</code> needs the following dependencies to work <code>libssl-dev</code>, <code>automake</code>, <code>autoconf</code> and <code>libncurses5-dev</code>.</em></p>
+<p>The two first commands add <strong>erlang</strong> and <strong>elixir</strong> to the dependencies of
+<code>asdf</code>. The two seconds install, in a <code>asdf</code> folder, <strong>erlang</strong> and <strong>elixir</strong> in
+their respective versions <strong>22.0</strong> and <strong>1.11.3</strong>.</p>
+<p>The two last commands set the <strong>erlang</strong> and <strong>elixir</strong> installs available in a
+global environment. You can also set the <code>asdf</code> option to <code>local</code> to restrict
+the environment of your installation to the directory you are currently in and
+all it's child folders.</p>
+<h2>
+<a id="user-content-step-1" class="anchor" href="#step-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 1</h2>
+<p>In this step we will discover how to create a <code>mix</code> project, compile it and
+run a <code>iex</code> instance in the <code>mix</code> project environment</p>
+<p>To create a <code>mix</code> project run the following command:</p>
+<pre><code>mix new &lt;nameofyourproject&gt; --sup
+</code></pre>
+<p>This command will generate a mix project containing the different folders:
+<strong><code>config</code></strong>, <strong><code>lib</code></strong> and <strong><code>test</code></strong> with the file <code>mix.exs</code></p>
+<p>The <strong><strong>mix.exs</strong></strong> is the project description file. It contains an <strong>elixir</strong>
+module that <code>use</code> the library <strong><code>Mix.Project</code></strong> and implement the <code>mix</code> required
+functions to enable <code>mix</code> to compile our project.</p>
+<ul>
+<li>
+<code>project</code> function returns the state of the project, with the version
+of <strong>elixir</strong> supposed to be used, the version of the project, ... This also
+declares the dependencies of the project in the <code>:deps</code> element by calling the
+function <code>deps</code> I will describe later.</li>
+<li>
+<code>application</code> function returns the list of applications and modules to start
+at the start up of the project. Here we have the <code>:logger</code> application, that
+enable a minimum log during the execution of the project. You can also specify
+the execution of a module on start up with the tag <code>:mod</code> in the list. Here,
+we start our <strong><code>TutoKBRWStack</code></strong> module. To start a module that way, the module
+must implement the function</li>
+</ul>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">def</span> <span class="pl-en">start</span>(type, args)</pre></div>
+<ul>
+<li>
+<code>deps</code> function returns the list of dependencies needed by the project. This
+will download the modules required in the folder <strong><code>deps</code></strong>. We will talk
+more deeply about this function and its implication later in this tutorials.</li>
+</ul>
+<p>I will now list the command that you will need to compile, execute and reload
+a mix project.</p>
+<p><strong><strong>Compilation</strong></strong>: To compile a mix project you need to run the command:</p>
+<pre><code>mix compile
+</code></pre>
+<p><strong><strong>Launch</strong></strong>: To launch the project, you can run the following command. Be
+careful, this command include the compilation of the project in it. This must
+be run in the root folder of your poject</p>
+<pre><code>iex -S mix
+</code></pre>
+<p><strong><strong>Reload</strong></strong>: You can reload the project while in an <code>iex</code> instance. The first
+way is to compile the project in a terminal and then in an <code>iex</code> instance already
+running type <code>r</code> </p>
+<pre><code>mix compile
+iex&gt; r &lt;ModuleToReload&gt;
+</code></pre>
+<p>Be careful here, reloading a sub module will only load this sub and all its
+submodules, while reloading the main module will load everything.</p>
+<p>In a <code>iex</code> instance, running following command is equivalent to run the above
+command on the main module.</p>
+<pre><code>iex&gt; recompile
+</code></pre>
+<p>If you want to learn more about <code>mix</code>, the documentation of the <strong><code>Mix</code></strong>
+module is available on <a href="https://hexdocs.pm/mix/Mix.html" rel="nofollow">HexDoc</a>. I also
+recommend you to read
+<a href="https://elixir-lang.org/getting-started/mix-otp/introduction-to-mix.html" rel="nofollow">this</a>
+quick introduction to <code>mix</code> on the <strong>elixir</strong> offcial website.</p>
+<h2>
+<a id="user-content-question-time-" class="anchor" href="#question-time-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Question time !</h2>
+<ul>
+<li>Do you know the differences between a bitstring, a binary and a charlist ? How do you write them in Elixir ? In Erlang ?</li>
+<li>What is the main difference between a Stream and an Enum ?</li>
+<li>Sort this data structures from the cheapest to the most expensive one in terms of number of operations and CPU time:
+<ul>
+<li>List</li>
+<li>Bitstring</li>
+<li>Charlist</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p><a href="chap1.html">Next Chapter</a></p>
+
+</body>
+</html>
+</article>

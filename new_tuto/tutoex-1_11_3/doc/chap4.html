@@ -1,0 +1,325 @@
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+margin: 0 auto;
+padding: 45px;
+}
+
+@media (max-width: 767px) {
+  .markdown-body {
+padding: 15px;
+  }
+}
+</style>
+<article class="markdown-body">
+<!DOCTYPE html>
+<html>
+<head>
+  <title>chap4/README.md</title>
+  <link rel="stylesheet" href="../.github-markdown-css/github-markdown.css">
+</head>
+<body>
+<h1>
+<a id="user-content-chapter-4-your-great-friend-webflow" class="anchor" href="#chapter-4-your-great-friend-webflow" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Chapter 4: Your great friend, Webflow</h1>
+<p>The objective of this chapter is to familiarize yourself with <a href="https://webflow.com/" rel="nofollow">Webflow</a>, a tool we use to create beautiful and responsive front-end.<br>
+This tool helps us do the <strong>Design</strong> part of our project.  Linked with <strong>JSXZ</strong> and <strong>React</strong> you can rapidly create web applications.</p>
+<h2>
+<a id="user-content-step-0-setting-up-webflow" class="anchor" href="#step-0-setting-up-webflow" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 0: Setting up Webflow</h2>
+<p>Before you go further, you need to create a free <a href="https://webflow.com/" rel="nofollow">Webflow</a> account.<br>
+<a href="https://webflow.com/" rel="nofollow">Webflow</a> without a plan is restricted on some level. For example, you won't be able to create more than one page per project, or you won't be able to automatically export the resources of your project.</p>
+<h3>
+<a id="user-content-create-your-project" class="anchor" href="#create-your-project" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create your project</h3>
+<p>Once logged in on your <strong>Webflow</strong> account, go to your dashboard and create a new project.<br>
+Choose a  <code>Blank site</code> as starting point.</p>
+<p>You will be redirected to the <code>home</code> page of your project, where you can start your design.</p>
+<p>You can inspire yourself from other Webflow projects.</p>
+<h3>
+<a id="user-content-the-components" class="anchor" href="#the-components" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The components</h3>
+<p>You can find components in the left side of the page.<br>
+Some of them are customs and specific to <strong>Worflow</strong>. This means that they use custom Webflow CSS classes, that we do not have control of.<br>
+For this reason, we advise you to only use "raw" components.<br>
+This includes: all the <code>Basic</code>, all the <code>Typography</code>, all the <code>Forms</code>, and all the <code>Media</code>.</p>
+<p><strong>[NOTAE SIMONAE]</strong><br>
+Couple things to keep in mind when you build your website with webflow so the integration goes smoothly:</p>
+<ul>
+<li>Always use classes on your DOM components (never ids). So don't hesitate to create as many specific classes you need: This will make the integration easier later.</li>
+</ul>
+<h3>
+<a id="user-content-our-container" class="anchor" href="#our-container" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Our container</h3>
+<p>All the items of our page will be contained inside <strong>one</strong> container, a <code>div</code>.<br>
+Let's create it.</p>
+<p><em>The default container of a page is the <strong><code>&lt;body&gt;</code></strong> tag. But, as we're gonna use <strong>React</strong> this is gonna make some trouble. Indead, <strong>React</strong> use the body tag to inject the generated page in it. Think about that when you will use your webflow generated page inside your web application.</em></p>
+<p><a href="./img/container.png" target="_blank" rel="noopener noreferrer"><img src="./img/container.png" alt="container" style="max-width:100%;"></a></p>
+<h3>
+<a id="user-content-web-page-design" class="anchor" href="#web-page-design" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Web page design</h3>
+<p>All our web applications use <strong>React</strong>, as well as the homemade library named <strong>JSXZ</strong>.</p>
+<p>As you already know, <strong>JSXZ</strong> is using what we call a <strong>CSS selector</strong>. This means that when rendering our web page, we will be able to target specific <strong>CSS classes</strong> to alter it and inject custom values.</p>
+<p>Knowing this will impact the way you are gonna design your page.<br>
+So if we think about the architecture of a table it will have to look like that when we will want to inject values:</p>
+<div class="highlight highlight-source-js"><pre><span class="pl-k">&lt;</span><span class="pl-c1">JSXZ</span> sel<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>.table<span class="pl-pds">"</span></span><span class="pl-k">&gt;</span>
+  <span class="pl-k">&lt;</span><span class="pl-c1">Z</span> sel<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>.tab-header<span class="pl-pds">"</span></span><span class="pl-k">&gt;&lt;</span>ChildrenZ<span class="pl-k">/</span><span class="pl-k">&gt;&lt;</span><span class="pl-k">/</span><span class="pl-c1">Z</span><span class="pl-k">&gt;</span>
+  <span class="pl-k">&lt;</span><span class="pl-c1">Z</span> sel<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>.tab-body<span class="pl-pds">"</span></span><span class="pl-k">&gt;</span>
+    <span class="pl-k">&lt;</span><span class="pl-c1">JSXZ</span> sel<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>.line<span class="pl-pds">"</span></span><span class="pl-k">&gt;</span>{<span class="pl-s"><span class="pl-pds">'</span>Line 1<span class="pl-pds">'</span></span>}<span class="pl-k">&lt;</span><span class="pl-k">/</span><span class="pl-c1">JSXZ</span><span class="pl-k">&gt;</span>
+    <span class="pl-k">&lt;</span><span class="pl-c1">JSXZ</span> sel<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>.line<span class="pl-pds">"</span></span><span class="pl-k">&gt;</span>{<span class="pl-s"><span class="pl-pds">'</span>Line 2<span class="pl-pds">'</span></span>}<span class="pl-k">&lt;</span><span class="pl-k">/</span><span class="pl-c1">JSXZ</span><span class="pl-k">&gt;</span>
+    <span class="pl-k">&lt;</span><span class="pl-c1">JSXZ</span> sel<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>.line<span class="pl-pds">"</span></span><span class="pl-k">&gt;</span>{<span class="pl-s"><span class="pl-pds">'</span>Line 3<span class="pl-pds">'</span></span>}<span class="pl-k">&lt;</span><span class="pl-k">/</span><span class="pl-c1">JSXZ</span><span class="pl-k">&gt;</span>
+    <span class="pl-k">&lt;</span><span class="pl-c1">JSXZ</span> sel<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>.line<span class="pl-pds">"</span></span><span class="pl-k">&gt;</span>{<span class="pl-s"><span class="pl-pds">'</span>Line 4<span class="pl-pds">'</span></span>}<span class="pl-k">&lt;</span><span class="pl-k">/</span><span class="pl-c1">JSXZ</span><span class="pl-k">&gt;</span>
+  <span class="pl-k">&lt;</span><span class="pl-k">/</span><span class="pl-c1">Z</span><span class="pl-k">&gt;</span>
+<span class="pl-k">&lt;</span><span class="pl-k">/</span><span class="pl-c1">JSXZ</span><span class="pl-k">&gt;</span></pre></div>
+<p>We can see that each lines as a specific <strong>CSS class</strong>, and it should also be the same for the columns if we want to inject values at specific positions inside a line.</p>
+<p><a href="./img/table-header-archi.png" target="_blank" rel="noopener noreferrer"><img src="./img/table-header-archi.png" alt="table-header-archi" style="max-width:100%;"></a></p>
+<p>If we use the same thinking for our table body, we end up with something like this:</p>
+<p><a href="./img/table-architecture.png" target="_blank" rel="noopener noreferrer"><img src="./img/table-architecture.png" alt="architecture" style="max-width:100%;"></a></p>
+<p><strong>All the CSS of our page is done via Webflow, DO NOT edit your CSS files with another editor.</strong></p>
+<h3>
+<a id="user-content-tips-and-tricks" class="anchor" href="#tips-and-tricks" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Tips and tricks</h3>
+<ul>
+<li>The layout <code>Flex box</code> is really useful and allow you to center your content. It should be your default layout. You can change the layout of a specific component using the right panel on you web page.</li>
+</ul>
+<p><a href="./img/flex-panel.png" target="_blank" rel="noopener noreferrer"><img src="./img/flex-panel.png" alt="flex-panel" style="max-width:100%;"></a></p>
+<h3>
+<a id="user-content-font-awesome" class="anchor" href="#font-awesome" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Font awesome</h3>
+<p>We will use the <a href="https://fontawesome.com/" rel="nofollow"><strong>Font awesome</strong></a> fonts for all the texts.</p>
+<p>Here are the steps to install them:</p>
+<ul>
+<li>Download the fonts <a href="https://fontawesome.com/how-to-use/on-the-web/setup/hosting-font-awesome-yourself" rel="nofollow">here</a>
+</li>
+<li>Go you your <a href="https://webflow.com/dashboard" rel="nofollow">Webflow Dashboard</a>
+</li>
+<li>Go to the settings of your project</li>
+<li>In the tab <code>Fonts</code> click on <code>Upload</code> and select all the fonts inside the folder <code>webfonts</code>
+</li>
+<li>Validate every fonts</li>
+</ul>
+<p>To use it, you can for example select an icon from <a href="https://fontawesome.com/icons?d=gallery" rel="nofollow">this list</a>, copy the <code>glyph unicode</code> and paste it inside you Webflow.<br>
+You should see a square. Change the fonts of this component to <code>Fa solid</code> and you should see your icon now :).</p>
+<p><em>You should now be able to select the fonts like <strong>Fa <em>something</em></strong> in your projects.</em></p>
+<h2>
+<a id="user-content-step-1-design-our-pages" class="anchor" href="#step-1-design-our-pages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 1: Design our pages</h2>
+<p>You will create a basic two-pages front-end:</p>
+<ul>
+<li>
+<p>The first page will:</p>
+<ul>
+<li>Display a search box with a search button</li>
+<li>Display a pagination at the bottom
+<ul>
+<li>The user must be able to go to the <strong>First</strong>, <strong>-1</strong>, <strong>+1</strong>, <strong>Last</strong> pages.
+<ul>
+<li>
+<em>Example</em>: <code>0 1 2 3</code> Will be displayed, where <strong>2</strong> is the current page, and there is just enougth data to be displayed on the 3rd.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Display an array containing all the orders: their command number, customer name, address, and the total quantity of items</li>
+<li>On each line of the array there should also be a button to pay the order, and another to go to the order's details</li>
+</ul>
+</li>
+<li>
+<p>The second page will:</p>
+<ul>
+<li>Display the detail of an order: command number, customer name, address</li>
+<li>Display a table of the content of the order: name, unit price, total price, quantity</li>
+<li>Display the total price of the order</li>
+<li>A return button to go back to the first page</li>
+</ul>
+</li>
+</ul>
+<p><strong>Take your time to do something good :)</strong><br>
+<strong>Use at least ONE Font Awesome icon.</strong></p>
+<p><em>Some examples:</em></p>
+<hr>
+<p><a href="./img/orders_page.png" target="_blank" rel="noopener noreferrer"><img src="./img/orders_page.png" alt="orders_page" style="max-width:100%;"></a></p>
+<hr>
+<p><a href="./img/order_page.png" target="_blank" rel="noopener noreferrer"><img src="./img/order_page.png" alt="order_page" style="max-width:100%;"></a></p>
+<hr>
+<h2>
+<a id="user-content-step-2-download-the-templates" class="anchor" href="#step-2-download-the-templates" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 2: Download the templates</h2>
+<p>Now that we have two beautiful pages, we want to download them in a <code>web</code> subdirectory of our mix project.</p>
+<p>To do so Webflow offers an export feature that allows you to download all your project resources in a zip file.<br>
+Unfortunately, this feature is not available on a free plan. But we found a little alternative so that you can still do this training.</p>
+<p>Once your satisfied with your design, find the <code>Publish</code> button on the top-right corner of Webflow (you should see a little rocket icon there). Click on it, select the default webflow.io domain suggested and click on <code>Publish to Selected Domains</code>. Once it's done, just go on the domain you just published to.</p>
+<p><a href="./img/webflow_publish.png" target="_blank" rel="noopener noreferrer"><img src="./img/webflow_publish.png" alt="architecture" style="max-width:100%;"></a></p>
+<p>On this page you can just manually download the resources of your projects and save them in the right place ;-)</p>
+<p>Example:<br>
+if my domain is <a href="http://tuto.webflow.io/" rel="nofollow">http://tuto.webflow.io/</a>, you can just run in your project repo the following <code>curl</code> command to download the resources.</p>
+<p><code>curl http://tuto.webflow.io/ &gt; web/tuto.webflow/orders.html</code></p>
+<p><code>curl https://uploads-ssl.webflow.com/5ac7a945e4871d724363ff2f/css/tuto.webflow.1509436a0.css &gt; web/tuto.webflow/csc/tuto.webflow.css</code>
+<em>etc.</em></p>
+<p>You'll have to do the same for every resources of your page.</p>
+<p>To know what you need, just check out in your Chrome inspector what your pages download.</p>
+<p><a href="./img/webflow_chrome_inspector.png" target="_blank" rel="noopener noreferrer"><img src="./img/webflow_chrome_inspector.png" alt="architecture" style="max-width:100%;"></a></p>
+<p>Rest assured, we don't do that manually on our projects. We have a nice automated way to download webflow resources, that you'll find out when you'll start working with us.</p>
+<p>You should now have your two html pages as well as the corresponding resources inside your <code>web</code> subdirectory.</p>
+<hr>
+<h2>
+<a id="user-content-step-3-link-webflow-react-and-jsxz" class="anchor" href="#step-3-link-webflow-react-and-jsxz" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 3: Link Webflow, React and JSXZ</h2>
+<p>Let's pack it all together ! :)</p>
+<h3>
+<a id="user-content-webpack" class="anchor" href="#webpack" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Webpack</h3>
+<p>We're gonna modify our Webpack configuration a little:</p>
+<ul>
+<li>Change the output directory</li>
+<li>Bundle all our <strong>CSS</strong> inside one file</li>
+</ul>
+<p>For that we first need to import two modules:</p>
+<div class="highlight highlight-source-js"><pre>  <span class="pl-k">var</span> ExtractTextPlugin <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">"</span>extract-text-webpack-plugin<span class="pl-pds">"</span></span>)
+  <span class="pl-k">var</span> path <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>path<span class="pl-pds">'</span></span>)</pre></div>
+<p><em>Add the necessary dependencies to your NPM project</em></p>
+<p>Here is the new configuration.</p>
+<div class="highlight highlight-source-js"><pre>    <span class="pl-c"><span class="pl-c">//</span>...</span>
+    <span class="pl-c"><span class="pl-c">//</span>This will output our files inside the ../priv/static directory</span>
+    output<span class="pl-k">:</span> {
+      path<span class="pl-k">:</span> <span class="pl-smi">path</span>.<span class="pl-en">resolve</span>(<span class="pl-c1">__dirname</span>, <span class="pl-s"><span class="pl-pds">'</span>../priv/static<span class="pl-pds">'</span></span>),
+      filename<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>bundle.js<span class="pl-pds">'</span></span>
+    },
+    <span class="pl-c"><span class="pl-c">//</span>...</span>
+    <span class="pl-c"><span class="pl-c">//</span>This will bundle all our .css file inside styles.css</span>
+    plugins<span class="pl-k">:</span> [
+        <span class="pl-k">new</span> <span class="pl-en">ExtractTextPlugin</span> ({
+            filename<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>styles.css<span class="pl-pds">"</span></span>
+        }),
+      ],
+    <span class="pl-c"><span class="pl-c">//</span>...</span>
+    <span class="pl-c"><span class="pl-c">//</span>Add to our loaders</span>
+    <span class="pl-c"><span class="pl-c">//</span>This will process the .css files included in our application (app.js)</span>
+            {
+                test<span class="pl-k">:</span><span class="pl-sr"> <span class="pl-pds">/</span><span class="pl-cce">\.</span>css<span class="pl-k">$</span><span class="pl-pds">/</span></span>,
+                use<span class="pl-k">:</span>  <span class="pl-smi">ExtractTextPlugin</span>.<span class="pl-en">extract</span>({use<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>css-loader<span class="pl-pds">"</span></span>})
+            }</pre></div>
+<p>To make Webpack aware of our files, we will need to <code>require</code> them inside our application.</p>
+<div class="highlight highlight-source-js"><pre><span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>!!file-loader?name=[name].[ext]!./index.html<span class="pl-pds">'</span></span>)
+<span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>./tuto.webflow/css/tuto.webflow.css<span class="pl-pds">'</span></span>);</pre></div>
+<p><em>I will let you have a look at the dependency file-loader and install it</em></p>
+<h3>
+<a id="user-content-the-react-web-application" class="anchor" href="#the-react-web-application" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The React web application</h3>
+<p>Rename your <code>script.js</code> into <code>app.js</code>, and remove everything inside it.<br>
+Let's create the base of our React App:</p>
+<div class="highlight highlight-source-js"><pre><span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>!!file-loader?name=[name].[ext]!./index.html<span class="pl-pds">'</span></span>)
+<span class="pl-c"><span class="pl-c">/*</span> required library for our React app <span class="pl-c">*/</span></span>
+<span class="pl-k">var</span> ReactDOM <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>react-dom<span class="pl-pds">'</span></span>)
+<span class="pl-k">var</span> React <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">"</span>react<span class="pl-pds">"</span></span>)
+<span class="pl-k">var</span> createReactClass <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>create-react-class<span class="pl-pds">'</span></span>)
+
+<span class="pl-c"><span class="pl-c">/*</span> required css for our application <span class="pl-c">*/</span></span>
+<span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>./tuto.webflow/css/webflow.css<span class="pl-pds">'</span></span>);
+<span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>./tuto.webflow/css/tuto.webflow.css<span class="pl-pds">'</span></span>);</pre></div>
+<p><em>You need to require your own resources, according to your webflow project and the css files your downloaded.</em></p>
+<p>Here we require all the needed library for our <strong>React</strong> application.<br>
+Now we will write our custom React component using our <strong>HTML</strong> code:</p>
+<div class="highlight highlight-source-js"><pre><span class="pl-k">var</span> Page <span class="pl-k">=</span> <span class="pl-en">createReactClass</span>( {
+<span class="pl-en">render</span>(){
+  <span class="pl-k">return</span> <span class="pl-k">&lt;</span><span class="pl-c1">JSXZ</span> <span class="pl-k">in</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span> sel<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>.container<span class="pl-pds">"</span></span><span class="pl-k">&gt;</span>
+  <span class="pl-k">&lt;</span><span class="pl-k">/</span><span class="pl-c1">JSXZ</span><span class="pl-k">&gt;</span>
+}
+})
+
+<span class="pl-smi">ReactDOM</span>.<span class="pl-en">render</span>(<span class="pl-k">&lt;</span>Page <span class="pl-k">/</span><span class="pl-k">&gt;</span>, <span class="pl-c1">document</span>.<span class="pl-c1">getElementById</span>(<span class="pl-s"><span class="pl-pds">'</span>root<span class="pl-pds">'</span></span>));</pre></div>
+<p>Here, the <strong><code>&lt;JSXZ&gt;</code></strong> tag tells to the transpiler to integrate all the content of the <code>.container</code> class of our <strong>HTML</strong> in the <strong>React</strong> class. This will print statically the content of our class on our page.</p>
+<p>Now execute <strong>Webpack</strong> script to transpile our page to <code>priv/static</code></p>
+<div class="highlight highlight-source-shell"><pre>  $<span class="pl-k">&gt;</span> node node_modules/webpack/bin/webpack.js</pre></div>
+<p><em>Hint: you can use the <code>-w</code> option to tell webpack to watch over you files and transpile them when a modification occured.</em></p>
+<p>To verify our page is correctly generated, launch <code>./priv/static/index.html</code> in your bowser. Verify the whole page is correctly printed in your bowser.</p>
+<p>Let's now modify our script to load the data in our table.<br>
+For that we will use the <strong><code>&lt;Z&gt;</code></strong> tag.</p>
+<h3>
+<a id="user-content-integrate-webflow-html-with-jsxz" class="anchor" href="#integrate-webflow-html-with-jsxz" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Integrate Webflow HTML with JSXZ</h3>
+<p>You can have a look to the JSXZ repository <a href="https://github.com/kbrw/babel-preset-jsxz">here</a>.</p>
+<p>Once we installed everything to transpile <strong>JSXZ</strong>, we can write our first
+<strong>React</strong> with a <strong>JSXZ</strong> page based on a <strong>Webflow</strong> template.<br>
+As in the previous chapter, all our templates are inside a directory.<br>
+We indicated this directory to <strong>JSXZ</strong> inside the Webpack configuration:</p>
+<div class="highlight highlight-source-js"><pre>presets<span class="pl-k">:</span> [[<span class="pl-s"><span class="pl-pds">'</span>jsxz<span class="pl-pds">'</span></span>,{dir<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>webflow<span class="pl-pds">"</span></span>}]]</pre></div>
+<p>Let's write an example <strong>React</strong> that read JSON variable set locally in our
+JS script.</p>
+<p>Define an array that will be map over inside our <code>Page.render</code> function created before.</p>
+<div class="highlight highlight-source-js"><pre><span class="pl-k">var</span> orders <span class="pl-k">=</span> [
+  {remoteid<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>000000189<span class="pl-pds">"</span></span>, custom<span class="pl-k">:</span> {customer<span class="pl-k">:</span> {full_name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>TOTO &amp; CIE<span class="pl-pds">"</span></span>}, billing_address<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Some where in the world<span class="pl-pds">"</span></span>}, items<span class="pl-k">:</span> <span class="pl-c1">2</span>}, 
+  {remoteid<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>000000190<span class="pl-pds">"</span></span>, custom<span class="pl-k">:</span> {customer<span class="pl-k">:</span> {full_name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Looney Toons<span class="pl-pds">"</span></span>}, billing_address<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>The Warner Bros Company<span class="pl-pds">"</span></span>}, items<span class="pl-k">:</span> <span class="pl-c1">3</span>}, 
+  {remoteid<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>000000191<span class="pl-pds">"</span></span>, custom<span class="pl-k">:</span> {customer<span class="pl-k">:</span> {full_name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Asterix &amp; Obelix<span class="pl-pds">"</span></span>}, billing_address<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Armorique<span class="pl-pds">"</span></span>}, items<span class="pl-k">:</span> <span class="pl-c1">29</span>}, 
+  {remoteid<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>000000192<span class="pl-pds">"</span></span>, custom<span class="pl-k">:</span> {customer<span class="pl-k">:</span> {full_name<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Lucky Luke<span class="pl-pds">"</span></span>}, billing_address<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>A Cowboy doesn't have an address. Sorry<span class="pl-pds">"</span></span>}, items<span class="pl-k">:</span> <span class="pl-c1">0</span>}, 
+]
+
+<span class="pl-c"><span class="pl-c">//</span>To render this JSON in the table, we will have to map the list on a **`JSXZ`** render. </span>
+
+{
+  <span class="pl-smi">orders</span>.<span class="pl-en">map</span>( <span class="pl-smi">order</span> <span class="pl-k">=&gt;</span> (<span class="pl-k">&lt;</span><span class="pl-c1">JSXZ</span> <span class="pl-k">in</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span> sel<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>.table-line<span class="pl-pds">"</span></span><span class="pl-k">&gt;</span>
+  <span class="pl-k">&lt;</span><span class="pl-c1">Z</span> sel<span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>...<span class="pl-pds">"</span></span><span class="pl-k">&gt;</span>{<span class="pl-smi">order</span>.<span class="pl-smi">remoteid</span>}<span class="pl-k">&lt;</span><span class="pl-k">/</span><span class="pl-c1">Z</span><span class="pl-k">&gt;</span>
+  <span class="pl-k">...</span>
+  <span class="pl-k">&lt;</span><span class="pl-k">/</span><span class="pl-c1">JSXZ</span><span class="pl-k">&gt;</span>))
+ }</pre></div>
+<p><em>Don't forget that inside a <code>&lt;JSXZ&gt;</code> there must only be <code>&lt;Z&gt;</code> !</em></p>
+<h2>
+<a id="user-content-step-4---modal-and-loaders" class="anchor" href="#step-4---modal-and-loaders" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 4 - Modal and loaders</h2>
+<p>In your project you're gonna have times when you will do an heavy operation, and others where you will want to ask or show some specific information to your user.<br>
+For that, we will use Loaders and Modals :)</p>
+<h3>
+<a id="user-content-modal" class="anchor" href="#modal" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Modal</h3>
+<p>A modal is a window inside your browser window.</p>
+<p>We're gonna design one into Webflow.</p>
+<ul>
+<li>Create a new page. Always create your modals inside their own page, it will be better later to include them into your project using <strong>JSXZ</strong>
+</li>
+<li>Create a new div, it will be the container of our modal. We will name it <code>modal-wrapper</code>.
+<ul>
+<li>Assign it a <code>100%</code> Width and <code>100VH</code> Height.</li>
+<li>Change it's background color so that it's a little bit grey.</li>
+<li>Set its position to absolute, top left.</li>
+<li>Set the z-index to 1000</li>
+</ul>
+</li>
+<li>Add a new div inside your <code>modal-wrapper</code>, we will call it <code>modal-content</code>
+<ul>
+<li>It will be our modal "window"</li>
+<li>Put it at the center of your page, change the width and height</li>
+<li>Make its position <code>fixed</code>, so that it will stay in the center even if your user is scrolling</li>
+<li>Change the color of the background. Make it white for example.</li>
+<li>Now inside it you can add some components like text, forms, media, etc.</li>
+</ul>
+</li>
+</ul>
+<p>You should obtain something like this:<br>
+<a href="./img/modal_example.png" target="_blank" rel="noopener noreferrer"><img src="./img/modal_example.png" alt="modal_example" style="max-width:100%;"></a></p>
+<p>And here we have our first modal ! Great isn't it ? :)</p>
+<p>But we're still missing something, we need to find a way to hide it.</p>
+<p>In Webflow, create a new CSS class called <code>hidden</code>.<br>
+This class is pretty simple, just click on the <strong>"hides elements"</strong> in the display section.<br>
+Test it by adding it to your <code>modal-wrapper</code> div. It should hide your modal <strong>and</strong> the grey background.</p>
+<p><em><strong>Tip:</strong> You class must be the only one on your component when you edit it. The simplest way is to create an <strong>empty div</strong>, create your CSS class, and then delete this div.</em></p>
+<p><a href="./img/hidden_class.png" target="_blank" rel="noopener noreferrer"><img src="./img/hidden_class.png" alt="hidden_class" style="max-width:100%;"></a></p>
+<h3>
+<a id="user-content-loader" class="anchor" href="#loader" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Loader</h3>
+<p>A loader is essentially the same thing as a modal, the difference is that it contains a GIF or an animated image.</p>
+<p>Follow the same principles of creation that we have with a modal:</p>
+<ul>
+<li>Create a new page</li>
+<li>Create our container div, this time name it <code>loader-wrapper</code>
+<ul>
+<li>Apply the same properties as we did before for the <code>modal-wrapper</code>
+</li>
+</ul>
+</li>
+<li>Create a new div called <code>loader-content</code>
+<ul>
+<li>Add an image inside it</li>
+<li>You can use the website <a href="https://loading.io" rel="nofollow">https://loading.io</a> to create your own custom loader</li>
+</ul>
+</li>
+</ul>
+<p>And that's it ! If you want to hide it, add the <code>hidden</code> CSS class to your <code>wrapper</code> div et voilà ! :)</p>
+<hr>
+<h2>
+<a id="user-content-question-time-" class="anchor" href="#question-time-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Question time !</h2>
+<ul>
+<li>What use a Loader or a Modal ?</li>
+<li>Why do we use <strong>CSS</strong> classes ?</li>
+<li>Qu'est-ce que Webflow ?</li>
+</ul>
+<hr>
+<p><a href="chap3.html">Prev Chapter</a> <strong>Chapter 4</strong> <a href="chap5.html">Next Chapter</a></p>
+
+</body>
+</html>
+</article>

@@ -1,0 +1,239 @@
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+margin: 0 auto;
+padding: 45px;
+}
+
+@media (max-width: 767px) {
+  .markdown-body {
+padding: 15px;
+  }
+}
+</style>
+<article class="markdown-body">
+<!DOCTYPE html>
+<html>
+<head>
+  <title>chap2/README.md</title>
+  <link rel="stylesheet" href="../.github-markdown-css/github-markdown.css">
+</head>
+<body>
+<h1>
+<a id="user-content-chap2---plugs-cowboy-and-macros" class="anchor" href="#chap2---plugs-cowboy-and-macros" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Chap2 - Plugs, Cowboy and Macros</h1>
+<p>In this chapter we will explore how to do some basic metaprogrammation in Elixir, and use it to develop a basic Web Router.<br>
+We are gonna use the dependency <code>Cowboy</code> to implement our HTTP server.<br>
+This chapter is gonna introduce you to the <a href="https://hexdocs.pm/plug/readme.html" rel="nofollow"><strong>Plugs</strong> library</a>.</p>
+<h2>
+<a id="user-content-step-0---the-big-bang-or-the-rising-of-cowboy" class="anchor" href="#step-0---the-big-bang-or-the-rising-of-cowboy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 0 - The Big Bang, or the rising of Cowboy</h2>
+<h3>
+<a id="user-content-dependencies" class="anchor" href="#dependencies" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Dependencies</h3>
+<p>First of all, we are gonna add this libraries to our dependencies.</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defp</span> <span class="pl-en">deps</span> <span class="pl-k">do</span>
+  [
+      {<span class="pl-c1">:poison</span>, <span class="pl-s"><span class="pl-pds">"</span>~&gt; 4.0<span class="pl-pds">"</span></span>},
+      {<span class="pl-c1">:plug_cowboy</span>, <span class="pl-s"><span class="pl-pds">"</span>~&gt; 2.0<span class="pl-pds">"</span></span>}
+  ]</pre></div>
+<p>Now we need to run the command <code>mix deps.get</code> to download our <strong>mix</strong> dependencies.</p>
+<h3>
+<a id="user-content-the-beginning" class="anchor" href="#the-beginning" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The Beginning</h3>
+<p>To start our server, we need to start the application. Let's add a dependant application that will help us log stuff:</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">def</span> <span class="pl-en">application</span> <span class="pl-k">do</span>
+  [ 
+     <span class="pl-c1">extra_applications:</span> [<span class="pl-c1">:logger</span>],
+    <span class="pl-c1">mod:</span> {<span class="pl-en">TutoKBRWStack</span>, []}
+  ]
+<span class="pl-k">end</span></pre></div>
+<p>Plug is an adapter that lets you run code on top of any webserver. Our server is — you guessed it — cowboy! Fortunately, <code>plug-cowboy</code> packages the two of them neatly together.</p>
+<h3>
+<a id="user-content-and-there-was-light" class="anchor" href="#and-there-was-light" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>And there was light</h3>
+<p>Our cowboy needs to know where to redirect the requests he receives. He's a sharp shooter, but a blind one for now.<br>
+To give him sight, we will <strong>create a new module</strong> handled by a <strong>supervisor</strong>. He will be our <a href="https://en.wikipedia.org/wiki/Routing" rel="nofollow"><strong>Router</strong></a>.</p>
+<p>To get our router started, we can use <a href="https://hexdocs.pm/plug_cowboy/Plug.Cowboy.html#child_spec/1" rel="nofollow">the <code>child_spec/1</code> function of the
+<strong><code>Plug.Cowboy</code></strong> module</a>.
+The parameter is a keyword list with the following keys:</p>
+<ul>
+<li>
+<code>:plug</code> is the <strong>Plug Module</strong>, our router <em>(leave it empty for now, we will come back at it in a second)</em>
+</li>
+<li>
+<code>:scheme</code> is the protocol to use for our router (<code>:http</code> or <code>:https</code>)</li>
+<li>
+<code>:options</code> is a list of options for cowboy (we precise here the port with <code>[port: 4001]</code>)</li>
+</ul>
+<p>The complete line looks like this:</p>
+<div class="highlight highlight-source-elixir"><pre>      <span class="pl-en">Plug</span>.<span class="pl-en">Cowboy</span>.<span class="pl-en">child_spec</span>(
+        <span class="pl-c1">scheme:</span> <span class="pl-c1">:http</span>,
+        <span class="pl-c1">plug:</span> <span class="pl-en">Server</span>.<span class="pl-en">Router</span>,
+        <span class="pl-c1">options:</span> [<span class="pl-c1">port:</span> <span class="pl-c1">4001</span>]
+      )</pre></div>
+<p>Tthis child spec does nothing on it's own... You need to ask the supervisor to supervise it. This will allow you to access your web application at the address <a href="http://localhost:4001/" rel="nofollow">http://localhost:4001/</a></p>
+<p>However, if you start your app you will notice that you are missing something... Where is your plug?</p>
+<h2>
+<a id="user-content-step-1---stone-age-the-first-plug" class="anchor" href="#step-1---stone-age-the-first-plug" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 1 - Stone age: the First Plug</h2>
+<p>Once upon a time there was a module.<br>
+This module was the first of its kind, and was very special: it was possible to call it using the <code>plug</code> macro.<br>
+It was a <strong>Plug Module</strong>.<br>
+It's name was <code>TheFirstPlug</code>.</p>
+<hr>
+<p><strong>Exercice:</strong><br>
+Create a <strong>Plug Module</strong> called <code>TheFirstPlug</code>.<br>
+We will use this module as our Router, and pass it as the second option of the <code>Plug.Cowboy.child_spec</code> call.</p>
+<p>A <strong>module plug</strong> is an extension of the function plug. It is a module that must export:</p>
+<ul>
+<li>an <code>init/1</code> function which takes a set of options and initializes it.</li>
+<li>a <code>call/2</code> function which takes in parameters a <a href="https://hexdocs.pm/plug/Plug.Conn.html" rel="nofollow">Plug.Conn</a> and the options returned by <code>init/1</code>
+</li>
+</ul>
+<p>The result returned by <code>init/1</code> is passed as second argument to <code>call/2</code>. Note that <code>init/1</code> may be called during compilation and as such it must not return pids, ports or values that are not specific to the runtime.</p>
+<p><em>Example of a module plug</em>:</p>
+<div class="highlight highlight-source-elixir"><pre>  <span class="pl-k">defmodule</span> <span class="pl-en">JSONHeaderPlug</span> <span class="pl-k">do</span>
+    <span class="pl-k">import</span> <span class="pl-en">Plug</span>.<span class="pl-en">Conn</span>
+
+    <span class="pl-k">def</span> <span class="pl-en">init</span>(opts) <span class="pl-k">do</span>
+      opts
+    <span class="pl-k">end</span>
+
+    <span class="pl-k">def</span> <span class="pl-en">call</span>(conn, <span class="pl-c">_opts</span>) <span class="pl-k">do</span>
+      <span class="pl-en">put_resp_content_type</span>(conn, <span class="pl-s"><span class="pl-pds">"</span>application/json<span class="pl-pds">"</span></span>)
+    <span class="pl-k">end</span>
+  <span class="pl-k">end</span></pre></div>
+<p><em>See the file <strong>plug.ex</strong> inside the folder <code>your_mix_folder/deps/plug/</code> for more details</em></p>
+<p>When your HTTP server will receive a request, the <code>call/2</code> function of your module plug will be called with the <code>conn</code> variable corresponding to the current request.<br>
+You can find the requested path using the <code>request_path</code> field.</p>
+<p>You can send a response using the <code>send_resp/3</code> function.<br>
+<em>Example</em>: <code>send_resp(conn, 200, "Hello world")</code><br>
+I will let you <strong>look into the documentation</strong> to find out what the differents parameters are.</p>
+<p>You router should have the following routes defined:</p>
+<ul>
+<li>
+<code>"/"</code> -&gt; Returns code 200, with content "Welcome to the new world of Plugs!"</li>
+<li>
+<code>"/me"</code> -&gt; Returns code 200, with content "I am The First, The One, Le Geant Plug Vert, Le Grand Plug, Le Plug Cosmique."</li>
+<li>All other routes -&gt; Returns code 404, with content "Go away, you are not welcome here."</li>
+</ul>
+<p>Following this, accessing <a href="http://localhost:4001/me" rel="nofollow">http://localhost:4001/me</a> should display the correct text inside your Web Browser.</p>
+<p><strong>Hints:</strong></p>
+<ul>
+<li>You can access the sources of the dependencies of your project inside the <code>deps</code> folder of your mix application</li>
+<li>A <strong>Plug</strong> is defined inside the file <code>plug.ex</code> of the <code>plug</code> dependency</li>
+<li>In <strong>Cowboy</strong> or <strong>Plug</strong>, when you see the <code>conn</code> argument, it refers to <a href="https://hexdocs.pm/plug/Plug.Conn.html" rel="nofollow">Plug.Conn</a>
+</li>
+</ul>
+<p><em>Usefull links:</em></p>
+<ul>
+<li><a href="https://hexdocs.pm/plug/Plug.Builder.html" rel="nofollow">https://hexdocs.pm/plug/Plug.Builder.html</a></li>
+<li><a href="https://hexdocs.pm/plug/readme.html" rel="nofollow">https://hexdocs.pm/plug/readme.html</a></li>
+<li><a href="https://hexdocs.pm/plug_cowboy/Plug.Cowboy.html" rel="nofollow">https://hexdocs.pm/plug_cowboy/Plug.Cowboy.html</a></li>
+<li><a href="https://hexdocs.pm/plug/Plug.Conn.html" rel="nofollow">https://hexdocs.pm/plug/Plug.Conn.html</a></li>
+</ul>
+<hr>
+<h2>
+<a id="user-content-step-2---bronze-age-macros-and-the-powers-of-creation" class="anchor" href="#step-2---bronze-age-macros-and-the-powers-of-creation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 2 - Bronze Age: Macros, and the Powers of Creation</h2>
+<p><strong>For this Chapter, read the Meta-Programming Guide of Elixir <a href="https://elixir-lang.org/getting-started/meta/quote-and-unquote.html" rel="nofollow">here</a></strong></p>
+<p>We have a beautiful HTTP server, with a working router.<br>
+However, it can quickly become difficult to maintain, especially if you want to run custom code before answering to the client request.</p>
+<p>To facilitate our life in the long run, we are going to create a <a href="https://elixir-lang.org/getting-started/meta/domain-specific-languages.html" rel="nofollow">Domain-Specific Language</a>.</p>
+<p>At the end of this step, we want to have a router that looks just like this:</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defmodule</span> <span class="pl-e">Server</span>.<span class="pl-en">Router</span> <span class="pl-k">do</span>
+  <span class="pl-k">use</span> <span class="pl-en">Server</span>.<span class="pl-en">TheCreator</span>
+
+  my_error <span class="pl-c1">code:</span> <span class="pl-c1">404</span>, <span class="pl-c1">content:</span> <span class="pl-s"><span class="pl-pds">"</span>Custom error message<span class="pl-pds">"</span></span>
+
+  my_get <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span> <span class="pl-k">do</span>
+    {<span class="pl-c1">200</span>, <span class="pl-s"><span class="pl-pds">"</span>Welcome to the new world of Plugs!<span class="pl-pds">"</span></span>}
+  <span class="pl-k">end</span>
+
+  my_get <span class="pl-s"><span class="pl-pds">"</span>/me<span class="pl-pds">"</span></span> <span class="pl-k">do</span>
+    {<span class="pl-c1">200</span>, <span class="pl-s"><span class="pl-pds">"</span>You are the Second One.<span class="pl-pds">"</span></span>}
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+<hr>
+<p><strong>Exercices:</strong><br>
+Create a module <code>Server.TheCreator</code>.<br>
+This module will be used (<code>use</code>) by our router, and will contain the implementation details of <strong>two macros</strong>:</p>
+<ul>
+<li>my_get: Allows the user to define new paths for the web application. It <strong>must</strong> return the HTTP response code as well as the HTTP response content</li>
+<li>my_error: Allows the user to change the default behaviour of the router in case of an error (the path requested doesn't exist). The default behaviour is <code>{404, "Go away, you are not welcome here"}</code>
+</li>
+</ul>
+<p>Our module will use the two private macros <code>__using__</code> and <code>__before_compile__</code>.<br>
+The first one is gonna import the necessary modules, inform the compiler that we want our macro <code>__before_compile__</code> to be called, and initialize some <a href="https://elixir-lang.org/getting-started/module-attributes.html" rel="nofollow">attributes</a> like the container of functions to call for each path, or the behaviour in case of error.</p>
+<p>The second one will define two functions (<code>init/1</code>, <code>call/2</code>), that will make the user of <code>Server.TheCreator</code> a <strong>Plug Module</strong>.</p>
+<h5>
+<a id="user-content-my_get" class="anchor" href="#my_get" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>my_get</h5>
+<p>This macro will create a new function, and store this new function name inside one of our module attributes.<br>
+This will allow our <code>call/2</code> function to check if a requested path as been defined, and if so execute the attached function to fetch the return code and the content.</p>
+<h5>
+<a id="user-content-my_error" class="anchor" href="#my_error" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>my_error</h5>
+<p>This macro will change the modules attributes to change the default behaviour in case of a path resolution failure.<br>
+It takes in parameters two arguments, <code>:code</code> and <code>:content</code>.</p>
+<p><strong>Usefull links:</strong></p>
+<ul>
+<li><a href="https://elixir-lang.org/getting-started/meta/domain-specific-languages.html#storing-information-with-attributes" rel="nofollow">https://elixir-lang.org/getting-started/meta/domain-specific-languages.html#storing-information-with-attributes</a></li>
+</ul>
+<p><strong>This part is really important, take your time to understand how macros work. DO NOT look at the correction immediatly, <a href="http://www.catb.org/~esr/faqs/smart-questions.html" rel="nofollow">ask</a> questions on the #formation channel first if need be !</strong></p>
+<hr>
+<h2>
+<a id="user-content-step-3---iron-age-the-child-prodigy-plugrouter" class="anchor" href="#step-3---iron-age-the-child-prodigy-plugrouter" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Step 3 - Iron Age: The child prodigy, Plug.Router</h2>
+<p>By now you should start getting confortable with the <strong>Elixir</strong> syntax and how <strong>Plug</strong> works.</p>
+<p>In this section we will have a look on how to use the module <strong><code>Plug.Router</code></strong>.<br>
+This module does more or less what you did in the previous section, but better :)<br>
+It provides a useful set of macros, allowing you to handle <strong>REST API</strong> call.</p>
+<p>You can find the documentation of <strong><code>Plug</code></strong> and <strong><code>Cowboy</code></strong> here:</p>
+<ul>
+<li><a href="https://hexdocs.pm/plug/Plug.Router.html" rel="nofollow"><strong><code>Plug.Router</code></strong></a></li>
+<li><a href="https://hexdocs.pm/plug_cowboy/Plug.Cowboy.html" rel="nofollow"><strong><code>Plug.Cowboy</code></strong></a></li>
+</ul>
+<p>Using <strong>Plug.Router</strong>, our router module should now looks like this:</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defmodule</span> <span class="pl-e">Server</span>.<span class="pl-en">Router</span> <span class="pl-k">do</span> 
+  <span class="pl-k">use</span> <span class="pl-en">Plug</span>.<span class="pl-en">Router</span> 
+
+  <span class="pl-en">plug</span>(<span class="pl-c1">:match</span>)
+  <span class="pl-en">plug</span>(<span class="pl-c1">:dispatch</span>)
+
+  get <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>, <span class="pl-c1">do:</span> <span class="pl-en">send_resp</span>(conn, <span class="pl-c1">200</span>, <span class="pl-s"><span class="pl-pds">"</span>Welcome<span class="pl-pds">"</span></span>)
+
+  match <span class="pl-c">_</span>, <span class="pl-c1">do:</span> <span class="pl-en">send_resp</span>(conn, <span class="pl-c1">404</span>, <span class="pl-s"><span class="pl-pds">"</span>Page Not Found<span class="pl-pds">"</span></span>)
+
+<span class="pl-k">end</span></pre></div>
+<p><em>Yes, it's similar to what you created earlier :)</em></p>
+<p>We can see that we need to use the <strong><code>Plug.Router</code></strong> module, to allow it to
+inject some code in our module.<br>
+We then use the macro <code>plug</code>, that precise which function to execute after receiving a message.<br>
+Here, the module will execute the <code>match/2</code> and <code>dispatch/2</code> functions injected in our module by <strong><code>Plug.Router</code></strong>.<br>
+After that we can define the behavior of our server with the <strong><code>Plug.Router</code></strong> macros <code>get</code>, <code>post</code>, <code>match</code>, ...</p>
+<p>The <code>get</code> macro create a function that handles the <code>GET</code> call to the server.
+Here we pattern match the path on <code>"/"</code>, which represents the root page of our website.</p>
+<p>The <code>match</code> macro creates a function that handles any type of call to our server.
+As we don't pattern match here, every other call but the <code>GET</code> on the root page will be managed by this plug.</p>
+<p>The return of the <code>do</code> blocks of this macro should be provided to <code>send_resp/3</code> which takes the following parameters:</p>
+<ul>
+<li>The <a href="https://hexdocs.pm/plug/Plug.Conn.html" rel="nofollow"><code>conn</code></a> variable that defines the client who needs to receive the information</li>
+<li>The HTTP status code (<code>200</code>, <code>404</code>, ...)</li>
+<li>The page to return to the client (This can contain an HTML page, a JSON for API call, ...)</li>
+</ul>
+<hr>
+<p><strong>Exercice:</strong></p>
+<p>Create a <strong>REST API</strong> allowing the user to interact with the database you defined in the previous chapter.<br>
+We should be able to delete, search, update, etc. using routes.<br>
+We should be able to call a route like this: <code>http://localhost:4001/search/?id=42&amp;value="oui"</code></p>
+<p><em>See the documentation for more details on how to fetch the query parameters.</em></p>
+<hr>
+<h2>
+<a id="user-content-question-time-" class="anchor" href="#question-time-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Question time !</h2>
+<ul>
+<li>What are the <code>Plug</code>s</li>
+<li>What utilities does they have ?</li>
+<li>What should <code>defmacro</code> return ?</li>
+<li>Why use the <code>Poison</code> dependency ?</li>
+<li>What does the <code>use</code> keyword do ? What are the differences with <code>require</code> ?</li>
+</ul>
+<hr>
+<p><a href="chap1.html">Prev Chapter</a> <strong>Chapter 2</strong> <a href="chap3.html">Next Chapter</a></p>
+
+</body>
+</html>
+</article>
