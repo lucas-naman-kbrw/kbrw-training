@@ -2,9 +2,14 @@
   "name": "web",
   "version": "0.1.0",
   "dependencies": {
+    "cookie": "~0.1.2",
+    "qs": "~2.3.3",
     "react": "^15.6.2",
     "react-dom": "^15.6.2",
-    "webpack": "^3.12.0"
+    "react-router-redux": "^5.0.0-alpha.9",
+    "webpack": "^3.12.0",
+    "when": "^3.7.8",
+    "xhr2": "^0.1.4"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
