@@ -10,6 +10,24 @@ var When = require('when')
 /* required css for our application */
 require('./webflow/css/orders.css');
 require('./webflow/css/order.css');
+require('./webflow/css/modal.css');
+require('./webflow/css/loadder.css');
+
+var cn = function(){
+  var args = arguments, classes = {}
+  for (var i in args) {
+    var arg = args[i]
+    if(!arg) continue
+    if ('string' === typeof arg || 'number' === typeof arg) {
+      arg.split(" ").filter((c)=> c!="").map((c)=>{
+        classes[c] = true
+      })
+    } else if ('object' === typeof arg) {
+      for (var key in arg) classes[key] = arg[key]
+    }
+  }
+  return Object.keys(classes).map((k)=> classes[k] && k || '').join(' ')
+}
 
 var XMLHttpRequest = require("xhr2")
 var HTTP = new (function(){
@@ -110,17 +128,85 @@ var Child = createReactClass({
 })
 
 var Layout = createReactClass ({
+
+  getInitialState: function() {
+    return {
+      modal: null,
+      loader: false,
+    };
+  },
+
+
+  modal(spec){
+    this.setState({
+      modal: {
+        ...spec, callback: (res)=>{
+          this.setState({modal: null},()=>{
+            if(spec.callback) spec.callback(res)
+          })
+        }
+      }
+    })
+  },
+
+  loader(promise) {
+    this.setState({loader: true});
+    return promise.then(() => {
+      this.setState({loader: false});
+    })
+  },
+
   render(){
+    var modal_component = {
+      'delete': (props) => <DeleteModal {...props}/>
+    }[this.state.modal && this.state.modal.type];
+    modal_component = modal_component && modal_component(this.state.modal)
+
+    var loader_component = this.state.loader && (() => <Loader />)
+    loader_component = loader_component && loader_component(this.state.loader)
+
+
+    var props = {
+      ...this.props, modal: this.modal, loader: this.loader
+    }
+
+
+
     return <JSXZ in="orders" sel=".layout">
         <Z sel=".layout-container">
-          <this.props.Child {...this.props}/>
+          <this.props.Child {...props}/>
+        </Z>
+        <Z sel=".modal-wrapper" className={cn(classNameZ, {'hidden': !modal_component})}>
+          {modal_component}
+        </Z>
+        <Z sel=".loadder-wrapper" className={cn(classNameZ, {'hidden': !loader_component})}>
+          {loader_component}
         </Z>
       </JSXZ>
   }
 })
 
+var Loader = createReactClass({
+  render() {
+    return <JSXZ in="loadder" sel=".loader">
+    </JSXZ>
+  }
+})
+
+var DeleteModal = createReactClass({
+  render(){
+    return <JSXZ in="modal" sel=".modal">
+        <Z sel=".title">{ this.props.title }</Z>
+        <Z sel=".message">{ this.props.message}</Z>
+        <Z sel=".button-cancel" onClick={() => this.props.callback(false)}><ChildrenZ /></Z>
+        <Z sel=".button-validate" onClick={() => this.props.callback(true)}><ChildrenZ /></Z>
+    </JSXZ>
+  }
+})
+
 var Header = createReactClass({
   render(){
+
     return <JSXZ in="orders" sel=".header">
         <Z sel=".header-container">
           <this.props.Child {...this.props}/>
@@ -137,12 +223,6 @@ var Order = createReactClass({
   render(){
     const order = this.props.order.value
     const items = order.custom.items
-    // const add = (a, b) => a.price + b.price;
-    // console.log(items[0].quantity_to_fetch)
-    // var total_quantity = 0
-    // for (var i = 0; i < items.length; i++) {
-    //   sum += items[i].quantity_to_fetch
-    // }
     let total_quantity = 0
     let total_price = 0
     let total_unit_price = 0
@@ -155,6 +235,18 @@ var Order = createReactClass({
         <Z sel=".order-name">{order.custom.customer.full_name}</Z>
         <Z sel=".order-address">{order.custom.shipping_address.street[0] + ", " + order.custom.shipping_address.postcode + " " + order.custom.shipping_address.city}</Z>
         <Z sel=".order-id">{order.id}</Z>
+        <Z sel=".table-body">
+        {
+          items.map((item, i) => (
+            <JSXZ key={i} in="order" sel=".table-order-info-body">
+              <Z sel=".table-order-info-body-name">{item.item_id}</Z>
+              <Z sel=".table-order-info-body-unit-price">{item.unit_price}</Z>
+              <Z sel=".table-order-info-body-quantity">{item.quantity_to_fetch}</Z>
+              <Z sel=".table-order-info-body-total-price">{item.unit_price * item.quantity_to_fetch}</Z>
+            </JSXZ>
+            ))
+        }
+        </Z>
         <Z sel=".total-price">{total_price}</Z>
         <Z sel=".total-quantity">{total_quantity}</Z>
         <Z sel=".total-unit-price">{total_unit_price}</Z>
@@ -166,15 +258,44 @@ var Orders = createReactClass({
   statics: {
     remoteProps: [remoteProps.orders]
   },
+
+  modal (id) {
+
+    this.props.modal({
+      type: 'delete',
+      title: 'Order deletion',
+      message: `Are you sure you want to delete this ?`,
+      callback: (value)=>{
+        if (value) {
+          this.props.loader(
+              HTTP.delete('/api/order/' + id)
+            ).then(() => {
+              delete browserState.orders;
+              onPathChange();
+            })
+        }
+      }
+    })  
+  },
+
   render(){
-    console.log(this.props.orders.value[0])
-    console.log(this.props.orders.value.map( order => (
-    <JSXZ in="orders" sel=".line-1">
-      <Z sel=".id">{order.custom.customer.full_name}</Z>
-    </JSXZ>)))
+
     return <JSXZ in="orders" sel=".container">
-        <Z sel=".line-1 .id">{this.props.orders.value[0].custom.customer.full_name}</Z>
-      </JSXZ>
+      <Z in="orders" sel=".table-body">
+        {
+          this.props.orders.value.map((order, i) => (<JSXZ key={i} in="orders" sel=".line-1">
+            <Z sel=".id">{order.id}</Z>
+            <Z sel=".customer">{order.custom.customer.full_name}</Z>
+            <Z sel=".address">{order.custom.shipping_address.street[0] + ", " + order.custom.shipping_address.postcode + " " + order.custom.shipping_address.city}</Z>
+            <Z sel=".quantity">{order.custom.items.length}</Z>
+            <Z sel=".id">{order.id}</Z>
+            <Z sel=".div-block-2" onClick={() => GoTo("order", order.id, "")}><ChildrenZ/></Z>
+            <Z sel=".status">Status: {order.status.state}</Z>
+            <Z sel=".trash" onClick={() => this.modal(order.id)}><ChildrenZ /></Z>
+          </JSXZ>))
+        }
+     </Z>
+    </JSXZ>
   }
 })
 
@@ -223,7 +344,6 @@ function onPathChange() {
     (props) => {
       browserState = props
       //Log our new browserState
-      console.log(browserState)
       //Render our components using our remote data
       ReactDOM.render(<Child {...browserState}/>, document.getElementById('root'))
     }, (res) => {

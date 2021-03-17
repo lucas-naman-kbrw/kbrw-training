@@ -4,7 +4,7 @@ defmodule ChapThree do
     import Supervisor.Spec
 
     Server.Supervisor.start_link
-    JsonLoader.load_to_database("", "orders_dump/orders_chunk1.json")
+    JsonLoader.load_to_database("", "orders_dump/orders_chunk0.json")
     children = [
       # Define workers and child supervisors to be supervised
       Plug.Adapters.Cowboy.child_spec(:http, Server.Router, [], [port: 4001])

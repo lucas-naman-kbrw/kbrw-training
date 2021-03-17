@@ -19,6 +19,14 @@ defmodule Server.Router do
     send_resp(conn, 200, body)
   end
 
+  delete "/api/order/:id" do
+    IO.puts("delete " <> id)
+    Process.sleep(1000)
+    Server.Database.delete_row({id, ""})
+    body = Poison.encode!(%{"ok" => "ok"})
+    send_resp(conn, 200, body)
+  end
+
   get _, do: send_file(conn, 200, "priv/static/index.html")
 
 end
