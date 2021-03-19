@@ -1,0 +1,14 @@
+%{
+  "cowboy": {:hex, :cowboy, "1.0.4", "a324a8df9f2316c833a470d918aaf73ae894278b8aa6226ce7a9bf699388f878", [:make, :rebar], [{:cowlib, "~> 1.0.0", [hex: :cowlib, repo: "hexpm", optional: false]}, {:ranch, "~> 1.0", [hex: :ranch, repo: "hexpm", optional: false]}], "hexpm", "6a0edee96885fae3a8dd0ac1f333538a42e807db638a9453064ccfdaa6b9fdac"},
+  "cowlib": {:hex, :cowlib, "1.0.2", "9d769a1d062c9c3ac753096f868ca121e2730b9a377de23dec0f7e08b1df84ee", [:make], [], "hexpm", "db622da03aa039e6366ab953e31186cc8190d32905e33788a1acb22744e6abd2"},
+  "exos": {:hex, :exos, "1.0.0", "4eb19eb958de0c07284a3e6d23966b41e0bce37556120fcf908900b1eeee2b60", [:mix], [], "hexpm", "3659fca730360d11d90db8ccb0206e978c838af48bc46ac096d47ea807b9d324"},
+  "mime": {:hex, :mime, "1.5.0", "203ef35ef3389aae6d361918bf3f952fa17a09e8e43b5aa592b93eba05d0fb8d", [:mix], [], "hexpm", "55a94c0f552249fc1a3dd9cd2d3ab9de9d3c89b559c2bd01121f824834f24746"},
+  "plug": {:hex, :plug, "1.11.1", "f2992bac66fdae679453c9e86134a4201f6f43a687d8ff1cd1b2862d53c80259", [:mix], [{:mime, "~> 1.0", [hex: :mime, repo: "hexpm", optional: false]}, {:plug_crypto, "~> 1.1.1 or ~> 1.2", [hex: :plug_crypto, repo: "hexpm", optional: false]}, {:telemetry, "~> 0.4", [hex: :telemetry, repo: "hexpm", optional: false]}], "hexpm", "23524e4fefbb587c11f0833b3910bfb414bf2e2534d61928e920f54e3a1b881f"},
+  "plug_cowboy": {:hex, :plug_cowboy, "1.0.0", "2e2a7d3409746d335f451218b8bb0858301c3de6d668c3052716c909936eb57a", [:mix], [{:cowboy, "~> 1.0", [hex: :cowboy, repo: "hexpm", optional: false]}, {:plug, "~> 1.7", [hex: :plug, repo: "hexpm", optional: false]}], "hexpm", "01d201427a8a1f4483be2465a98b45f5e82263327507fe93404a61c51eb9e9a8"},
+  "plug_crypto": {:hex, :plug_crypto, "1.2.1", "5c854427528bf61d159855cedddffc0625e2228b5f30eff76d5a4de42d896ef4", [:mix], [], "hexpm", "6961c0e17febd9d0bfa89632d391d2545d2e0eb73768f5f50305a23961d8782c"},
+  "poison": {:hex, :poison, "2.1.0", "f583218ced822675e484648fa26c933d621373f01c6c76bd00005d7bd4b82e27", [:mix], [], "hexpm", "002caaf939b97c84533ef0f621d3ed414ed703fcd03c91ec0dd62043df102c63"},
+  "poolboy": {:hex, :poolboy, "1.5.2", "392b007a1693a64540cead79830443abf5762f5d30cf50bc95cb2c1aaafa006b", [:rebar3], [], "hexpm", "dad79704ce5440f3d5a3681c8590b9dc25d1a561e8f5a9c995281012860901e3"},
+  "ranch": {:hex, :ranch, "1.7.1", "6b1fab51b49196860b733a49c07604465a47bdb78aa10c1c16a3d199f7f8c881", [:rebar3], [], "hexpm", "451d8527787df716d99dc36162fca05934915db0b6141bbdac2ea8d3c7afc7d7"},
+  "reaxt": {:git, "https://github.com/kbrw/reaxt.git", "f013a278e4884de418d13014286d08d40d1e6a65", [tag: "2.1.0"]},
+  "telemetry": {:hex, :telemetry, "0.4.2", "2808c992455e08d6177322f14d3bdb6b625fbcfd233a73505870d8738a2f4599", [:rebar3], [], "hexpm", "2d1419bd9dda6a206d7b5852179511722e2b18812310d304620c7bd92a13fcef"},
+}
