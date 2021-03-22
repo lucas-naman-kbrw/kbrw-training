@@ -15,14 +15,14 @@ defmodule ChapThree.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :cowboy, :reaxt],
+      extra_applications: [:logger, :reaxt],
       mod: {ChapThree, []}
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
-   [
+    [
       {:reaxt, "~> 2.1.0", github: "kbrw/reaxt", tag: "2.1.0"},
       {:plug_cowboy, "~> 1.0"},
       {:poison, "~> 2.1.0"}

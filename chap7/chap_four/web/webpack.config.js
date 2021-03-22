@@ -2,40 +2,41 @@ var ExtractTextPlugin = require("extract-text-webpack-plugin")
 var path = require('path')
 var webpack = require('webpack');
 
+
 // module.exports = {
-//   entry: './app.js',
-//   output: { 
-//     path: path.resolve(__dirname, '../priv/static'),
-//     filename: 'bundle.js'
-//   },
-//   plugins: [
-//     new ExtractTextPlugin ({
-//       filename: "styles.css"
-//   }),
-//   ],
-//   module: {
-//     loaders: [
-//       {
-//         test: /.js?$/,
-//         loader: 'babel-loader',
-//         exclude: /node_modules/,
-//         query: {
-//           presets: ['es2015', 'react', 'stage-0',
-//           [
-//             'jsxz',
-//             {
-//                 dir: 'webflow'
-//             }
-//         ]],
+//     entry: './app.js',
+//     output: { 
+//       path: path.resolve(__dirname, '../priv/static'),
+//       filename: 'bundle.js'
+//     },
+//     plugins: [
+//       new ExtractTextPlugin ({
+//         filename: "styles.css"
+//     }),
+//     ],
+//     module: {
+//       loaders: [
+//         {
+//           test: /.js?$/,
+//           loader: 'babel-loader',
+//           exclude: /node_modules/,
+//           query: {
+//             presets: ['es2015', 'react', 'stage-0',
+//             [
+//               'jsxz',
+//               {
+//                   dir: 'webflow'
+//               }
+//           ]],
+//           },
 //         },
-//       },
-//       {
-//         test: /\.css$/,
-//         use:  ExtractTextPlugin.extract({use: "css-loader"})
-//       }
-//     ]
-//   },
-// }
+//         {
+//           test: /\.css$/,
+//           use:  ExtractTextPlugin.extract({use: "css-loader"})
+//         }
+//       ]
+//     },
+//   }
 
 var client_config = {
   devtool: 'source-map',
@@ -50,7 +51,7 @@ var client_config = {
   plugins: [
     new ExtractTextPlugin({filename: "styles.css"}),new webpack.IgnorePlugin(/vertx/)
   ],
-  module: {
+  module: { 
     loaders: [
       {
         test: /.js?$/,
@@ -81,6 +82,6 @@ var server_config = Object.assign(Object.assign({},client_config),{
     path: path.join(__dirname, '../priv/react_servers'), //typical output on the default directory served by Plug.Static
     filename: 'server.js' //dynamic name for long term caching, or code splitting, use WebPack.file_of(:main) to get it
   },
- })
+})
 
- module.exports = [client_config,server_config]
+module.exports = [client_config,server_config]

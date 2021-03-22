@@ -1,14 +1,14 @@
 defmodule Server.Router do
   use Plug.Router
+  require EEx
+
+  EEx.function_from_file :defp, :layout, "web/layout.html.eex", [:render]
 
   plug(:match)
 
   plug Plug.Static, at: "/public", from: :chap_three
 
   plug(:dispatch)
-
-  require EEx
-  EEx.function_from_file :defp, :layout, "web/layout.html.eex", [:render]
 
   get "/api/orders" do
     IO.puts "api/orders"
