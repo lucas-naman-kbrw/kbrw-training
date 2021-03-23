@@ -47,6 +47,7 @@ defmodule Server.Database do
   end
 
   def handle_cast({:delete_row, {key, _value}}, _table) do
+    IO.puts "zozo"
     {:noreply, :ets.delete(:table, key)}
   end
 

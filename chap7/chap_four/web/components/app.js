@@ -117,13 +117,6 @@ var remoteProps = {
   }
 }
 
-var GoTo = (route, params, query) => {
-  var qs = Qs.stringify(query)
-  var url = routes[route].path(params) + ((qs=='') ? '' : ('?'+qs))
-  history.pushState({}, "", url)
-  onPathChange()
-}
-
 
 var Link = createReactClass({
   statics: {
@@ -199,10 +192,8 @@ var Layout = createReactClass ({
   },
 
   loader(promise) {
-    this.setState({loader: true});
-    return promise.then(() => {
-      this.setState({loader: false});
-    })
+    this.setState({ loader: true });
+    return promise.then(() => this.setState({ loader: false }, () => this.setState({ loader: false })));
   },
 
   render(){
@@ -316,12 +307,13 @@ var Orders = createReactClass({
       message: `Are you sure you want to delete this ?`,
       callback: (value)=>{
         if (value) {
-          this.props.loader(
-              HTTP.delete('/api/order/' + id)
-            ).then(() => {
-              delete browserState.orders;
-              onPathChange();
-            })
+          this.props.loader(HTTP.delete('/api/order/' + id)
+            .then()
+            .catch(err => console.log(err)))
+          .then(() => {
+            delete browserState.orders;
+            onPathChange();
+          })
         }
       }
     })  
@@ -368,7 +360,7 @@ var routes = {
   }
 }
 
-var browserState = {Child: Child}
+var browserState = {}
 
 function inferPropsChange(path,query,cookies){ // the second part of the onPathChange function have been moved here
   browserState = {
@@ -402,39 +394,6 @@ function inferPropsChange(path,query,cookies){ // the second part of the onPathC
     })
 }
 
-function onPathChange() {
-  var path = location.pathname
-  var qs = Qs.parse(location.search.slice(1))
-  var cookies = Cookie.parse(document.cookie)
-
-  var route, routeProps
-  //We try to match the requested path to one our our routes
-  for(var key in routes) {
-    routeProps = routes[key].match(path, qs)
-    if(routeProps){
-        route = key
-          break;
-    }
-  }
-  browserState = {
-    ...browserState,
-    ...routeProps,
-    route: route
-  }
-  addRemoteProps(browserState).then(
-    (props) => {
-      browserState = props
-      //Log our new browserState
-      //Render our components using our remote data
-      ReactDOM.render(<Child {...browserState}/>, document.getElementById('root'))
-    }, (res) => {
-      ReactDOM.render(<ErrorPage message={"Shit happened"} code={res.http_code}/>, document.getElementById('root'))
-    })
-}
-
-window.addEventListener("popstate", ()=>{ onPathChange() })
-onPathChange()
-
 module.exports = {
   reaxt_server_render(params, render){
     inferPropsChange(params.path, params.query, params.cookies)
@@ -448,6 +407,6 @@ module.exports = {
     browserState = initialProps
     Link.renderFunc = render
     window.addEventListener("popstate", ()=>{ Link.onPathChange() })
-    Link.onPathChange()
+    Link.onPathChange();
   }
 }

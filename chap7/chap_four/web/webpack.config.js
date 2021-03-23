@@ -51,7 +51,7 @@ var client_config = {
   plugins: [
     new ExtractTextPlugin({filename: "styles.css"}),new webpack.IgnorePlugin(/vertx/)
   ],
-  module: { 
+  module: {
     loaders: [
       {
         test: /.js?$/,

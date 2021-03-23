@@ -10910,13 +10910,6 @@ var remoteProps = {
   }
 };
 
-var GoTo = function GoTo(route, params, query) {
-  var qs = Qs.stringify(query);
-  var url = routes[route].path(params) + (qs == '' ? '' : '?' + qs);
-  history.pushState({}, "", url);
-  onPathChange();
-};
-
 var Link = createReactClass({
   displayName: 'Link',
 
@@ -11005,7 +10998,9 @@ var Layout = createReactClass({
 
     this.setState({ loader: true });
     return promise.then(function () {
-      _this3.setState({ loader: false });
+      return _this3.setState({ loader: false }, function () {
+        return _this3.setState({ loader: false });
+      });
     });
   },
   render: function render() {
@@ -11422,7 +11417,9 @@ var Orders = createReactClass({
       message: 'Are you sure you want to delete this ?',
       callback: function callback(value) {
         if (value) {
-          _this5.props.loader(HTTP.delete('/api/order/' + id)).then(function () {
+          _this5.props.loader(HTTP.delete('/api/order/' + id).then().catch(function (err) {
+            return console.log(err);
+          })).then(function () {
             delete browserState.orders;
             onPathChange();
           });
@@ -11705,7 +11702,7 @@ var routes = {
   }
 };
 
-var browserState = { Child: Child };
+var browserState = {};
 
 function inferPropsChange(path, query, cookies) {
   // the second part of the onPathChange function have been moved here
@@ -11737,38 +11734,6 @@ function inferPropsChange(path, query, cookies) {
     browserState = props;
   });
 }
-
-function onPathChange() {
-  var path = location.pathname;
-  var qs = Qs.parse(location.search.slice(1));
-  var cookies = Cookie.parse(document.cookie);
-
-  var route, routeProps;
-  //We try to match the requested path to one our our routes
-  for (var key in routes) {
-    routeProps = routes[key].match(path, qs);
-    if (routeProps) {
-      route = key;
-      break;
-    }
-  }
-  browserState = _extends({}, browserState, routeProps, {
-    route: route
-  });
-  addRemoteProps(browserState).then(function (props) {
-    browserState = props;
-    //Log our new browserState
-    //Render our components using our remote data
-    ReactDOM.render(React.createElement(Child, browserState), document.getElementById('root'));
-  }, function (res) {
-    ReactDOM.render(React.createElement(ErrorPage, { message: "Shit happened", code: res.http_code }), document.getElementById('root'));
-  });
-}
-
-window.addEventListener("popstate", function () {
-  onPathChange();
-});
-onPathChange();
 
 module.exports = {
   reaxt_server_render: function reaxt_server_render(params, render) {
