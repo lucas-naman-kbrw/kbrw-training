@@ -312,11 +312,22 @@ var Orders = createReactClass({
             .catch(err => console.log(err)))
           .then(() => {
             delete browserState.orders;
-            onPathChange();
+            Link.onPathChange();
           })
         }
       }
     })  
+  },
+
+  changeStatus(id) {
+    console.log("za")
+    this.props.loader(HTTP.put('/api/order/process_payment/' + id)
+      .then()
+      .catch(err => console.log(err)))
+    .then(() => {
+      delete browserState.orders;
+      Link.onPathChange();
+    })
   },
 
   render(){
@@ -330,7 +341,7 @@ var Orders = createReactClass({
             <Z sel=".address">{order.custom.shipping_address.street[0] + ", " + order.custom.shipping_address.postcode + " " + order.custom.shipping_address.city}</Z>
             <Z sel=".quantity">{order.custom.items.length}</Z>
             <Z sel=".id">{order.id}</Z>
-            <Z sel=".div-block-2" onClick={() => GoTo("order", order.id, "")}><ChildrenZ/></Z>
+            <Z sel=".div-block-2" onClick={() => this.changeStatus(order.id)}><ChildrenZ/></Z>
             <Z sel=".status">Status: {order.status.state}</Z>
             <Z sel=".trash" onClick={() => this.modal(order.id)}><ChildrenZ /></Z>
           </JSXZ>))

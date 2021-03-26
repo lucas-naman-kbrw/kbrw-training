@@ -11421,10 +11421,19 @@ var Orders = createReactClass({
             return console.log(err);
           })).then(function () {
             delete browserState.orders;
-            onPathChange();
+            Link.onPathChange();
           });
         }
       }
+    });
+  },
+  changeStatus: function changeStatus(id) {
+    console.log("za");
+    this.props.loader(HTTP.put('/api/order/process_payment/' + id).then().catch(function (err) {
+      return console.log(err);
+    })).then(function () {
+      delete browserState.orders;
+      Link.onPathChange();
     });
   },
   render: function render() {
@@ -11606,7 +11615,7 @@ var Orders = createReactClass({
                 {
                   className: 'div-block-2',
                   onClick: function onClick() {
-                    return GoTo("order", order.id, "");
+                    return _this6.changeStatus(order.id);
                   } },
                 '\uF06E'
               ),

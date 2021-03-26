@@ -31,6 +31,14 @@ defmodule Server.Router do
     send_resp(conn, 200, body)
   end
 
+  put "/api/order/process_payment/:id" do
+    {:ok, pid} = GenServer.start_link(Fsm.Payment, id)
+    new_order = GenServer.call(pid, :process_payment)
+    GenServer.stop(pid, :normal)
+    Server.Database.insert_row({new_order["id"], new_order})
+    send_resp(conn, 200, Poison.encode!(new_order))
+  end
+
   get _ do
     conn = fetch_query_params(conn)
     render = Reaxt.render!(:app, %{path: conn.request_path, cookies: conn.cookies, query: conn.params},30_000)
