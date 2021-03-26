@@ -1,7 +1,7 @@
-version: "2"
+version: "3"
 services:
   coordinator:
-    image: tutoex/riak-kv
+    image: basho/riak-kv
     ports:
       - "8087:8087"
       - "8098:8098"
@@ -11,13 +11,16 @@ services:
       - "com.basho.riak.cluster.name=riakkv"
     volumes:
       - schemas:/etc/riak/schemas
+      - ./user.conf:/etc/riak/user.conf
   member:
-    image: tutoex/riak-kv
+    image: basho/riak-kv
     ports:
       - "8087"
       - "8098"
     labels:
       - "com.basho.riak.cluster.name=riakkv"
+    volumes:
+      - ./user.conf:/etc/riak/user.conf
     links:
       - coordinator
     depends_on:
@@ -25,8 +28,7 @@ services:
     environment:
       - CLUSTER_NAME=riakkv
       - COORDINATOR_NODE=coordinator
-    
-
+​
 volumes:
   schemas:
-    external: true
+    external: false
