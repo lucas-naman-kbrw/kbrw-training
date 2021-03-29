@@ -8,7 +8,6 @@ defmodule Chap9.MixProject do
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      compilers: [:reaxt_webpack] ++ Mix.compilers
     ]
   end
 
