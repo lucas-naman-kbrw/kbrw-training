@@ -35,7 +35,6 @@ defmodule Server.Router do
     {:ok, pid} = GenServer.start_link(Fsm.Payment, id)
     new_order = GenServer.call(pid, :process_payment)
     GenServer.stop(pid, :normal)
-    Server.Database.insert_row({new_order["id"], new_order})
     send_resp(conn, 200, Poison.encode!(new_order))
   end
 
